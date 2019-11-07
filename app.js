@@ -1,12 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+dotenv.config();
 const bodyParser = require('body-parser');
 const config = require('./config/index');
 const join = require('path').join;
 const fs = require('fs');
 const models = join(__dirname, 'models');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT) || 3000;
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // bootstrap mongodb schemas
