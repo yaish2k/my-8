@@ -18,10 +18,10 @@ function createSchemas() {
 createSchemas();
 
 // bootstrap routes
-const userRoutes = require('./routes/user');
-const contactRequestRoutes = require('./routes/contact-requests');
+const usersRoutes = require('./routes/user');
+const contactRequestRoutes = require('./routes/contact-request');
 
-app.use('/user', userRoutes);
+app.use('/users', userRoutes);
 app.use('/contact-requests', contactRequestRoutes);
 
 module.exports = {
