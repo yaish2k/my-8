@@ -10,7 +10,7 @@ exports.tokenVerificationMiddleware = (req, res, next) => {
     }
     firebaseAdmin.auth().verifyIdToken(token)
         .then(decodedToken => {
-            req.userTokenId = decodedToken.id;
+            req.userTokenId = decodedToken.uid || decodedToken.id;
             return next()
         })
         .catch(err => {
