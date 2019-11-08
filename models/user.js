@@ -80,23 +80,6 @@ UserSchema.methods = {
         this.pending_contacts_requests = newPendingRequestsArray;
         return this.save()
 
-    },
-    getUserInformation: function () {
-        return this.findById(this.id)
-            .populate({
-                path: 'approved_contacts',
-                populate: {
-                    path: 'user',
-                    model: 'User'
-                }
-            })
-            .populate({
-                path: 'pending_contacts_requests',
-                populate: {
-                    path: 'pending_req',
-                    model: 'ContactRequest'
-                }
-            }).exec()
     }
 }
 /**
@@ -129,6 +112,25 @@ UserSchema.statics = {
             findOne({ phone_number: phoneNumber })
             .exec();
     },
+    getUserInformation: function (userId) {
+        const UserModel = this;
+        return UserModel
+            .findById(userId)
+            .populate({
+                path: 'approved_contacts',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
+            .populate({
+                path: 'pending_contacts_requests',
+                populate: {
+                    path: 'pending_req',
+                    model: 'ContactRequest'
+                }
+            }).exec()
+    }
 
 };
 

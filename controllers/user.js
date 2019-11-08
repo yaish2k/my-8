@@ -21,7 +21,7 @@ exports.editUser = (req, res, next) => {
 
 exports.getUserInformation = (req, res, next) => {
     const user = req.user;
-    user.getUserInformation()
+    User.getUserInformation(user.id)
         .then(info => res.status(200).send(info))
         .catch(err => res.status(418).send(err));
 };
