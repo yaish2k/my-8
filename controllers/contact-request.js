@@ -10,8 +10,12 @@ exports.createContactRequest = (req, res, next) => {
             askingUser,
             targetPhoneNumber,
             targetContactName)
-        .then(_ => res.sendStatus(201))
-        .catch(err => res.status(500).send(err))
+        .then(_ => {
+            res.sendStatus(201);
+        })
+        .catch(err => {
+            res.status(418).send(err);
+        })
 };
 
 exports.declineContactRequest = (req, res, next) => {
@@ -19,8 +23,12 @@ exports.declineContactRequest = (req, res, next) => {
     const { targetPhoneNumberToDecline } = req.body;
     ContactRequest
         .declineContactRequest(decliningUser, targetPhoneNumberToDecline)
-        .then(_ => res.sendStatus(201))
-        .catch(err => res.status(500).send(err))
+        .then(_ => {
+            res.status(200).send('Contact declined')
+        })
+        .catch(err => {
+            res.status(500).send(err)
+        })
 };
 
 exports.approveContactRequest = (req, res, next) => {
@@ -28,6 +36,10 @@ exports.approveContactRequest = (req, res, next) => {
     const { targetPhoneNumberToApprove } = req.body;
     ContactRequest
         .approveContactRequest(approvingUser, targetPhoneNumberToApprove)
-        .then(_ => res.sendStatus(201))
-        .catch(err => res.status(500).send(err))
+        .then(_ => {
+            res.status(200).send('Contact approved');
+        })
+        .catch(err => {
+            res.status(500).send(err);
+        })
 };

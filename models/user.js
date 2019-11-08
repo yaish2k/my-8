@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const { PHONE_VALIDATOR } = require('../utils/validators');
+const { PHONE_VALIDATOR, IMAGE_VALIDATOR, EMAIL_VALIDATOR } = require('../utils/validators');
+validator = require('validator')
 const Schema = mongoose.Schema;
 /**
  * User Schema
@@ -10,18 +11,14 @@ const UserSchema = new Schema({
     name: { type: String, default: '' },
     email: {
         unique: true,
+        immutable: true,
         type: String,
-        validate: {
-            validator: email => {
-                var emailRegex = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
-                return emailRegex.test(email.text); // Assuming email has a text attribute
-            },
-            message: props => `${props.value} is not a valid email!`
-        },
+        validate: EMAIL_VALIDATOR,
         required: [true, 'User email is required']
     },
     phone_number: {
         unique: true,
+        immutable: true,
         type: String,
         validate: PHONE_VALIDATOR,
         required: [true, 'User phone number required']
@@ -29,16 +26,7 @@ const UserSchema = new Schema({
     image_url: {
         type: String,
         default: '',
-        validate: {
-            validator: imageUrl => {
-                if (imageUrl) {
-                    urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
-                    return urlRegex.test(val);
-                }
-                return true;
-            },
-            message: props => 'Invalid Image URL.'
-        }
+        validate: IMAGE_VALIDATOR
     },
     approved_contacts: [
         {
@@ -69,14 +57,12 @@ UserSchema.methods = {
     },
 
     removeContact(contact) {
-        const index = this.approved_contacts.map(c => c.user.id).indexOf(contact.id);
+        const newContactsArray =
+            this.approved_contacts
+                .filter(c => c.user.toString() !== contact.id)
 
-        if (index !== -1) {
-            this.approved_contacts.splice(index, 1);
-            return this.save();
-        } else {
-            throw new Error('Contact not found');
-        }
+        this.approved_contacts = newContactsArray;
+        return this.save();
     },
 
     addPendingContactRequest(newContactRequest) {
@@ -87,15 +73,13 @@ UserSchema.methods = {
     },
 
     removePendingContactRequest(request) {
-        const index = this.pending_contacts_requests
-            .map(pr => pr.pending_req.id).indexOf(request.id);
 
-        if (index !== -1) {
-            this.pending_contacts_requests.splice(index, 1);
-            return this.save();
-        } else {
-            throw new Error('Pending request not found');
-        }
+        const newPendingRequestsArray =
+            this.pending_contacts_requests
+                .filter(pr => pr.pending_req.toString() !== request.id);
+        this.pending_contacts_requests = newPendingRequestsArray;
+        return this.save()
+
     },
     getUserInformation: function () {
         return this.findById(this.id)

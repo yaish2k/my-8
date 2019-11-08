@@ -11,10 +11,10 @@ exports.tokenVerificationMiddleware = (req, res, next) => {
     firebaseAdmin.auth().verifyIdToken(token)
         .then(decodedToken => {
             req.userTokenId = decodedToken.id;
-            next()
+            return next()
         })
         .catch(err => {
-            res.status(401).send("Access denied. Token verfication failed");
+            return res.status(401).send("Access denied. Token verfication failed");
         })
 }
 
@@ -28,10 +28,10 @@ exports.authenticationMiddleware = (req, res, next) => {
         })
         .then(user => {
             req.user = user;
-            next();
+            return next();
         })
         .catch(err => {
-            res.status(404).send("User not found.");
+            return res.status(404).send("User not found.");
         })
 
 }
