@@ -27,7 +27,7 @@ exports.declineContactRequest = (req, res, next) => {
             res.status(200).send('Contact declined')
         })
         .catch(err => {
-            res.status(500).send(err)
+            res.status(418).send(err)
         })
 };
 
@@ -40,6 +40,6 @@ exports.approveContactRequest = (req, res, next) => {
             res.status(200).send('Contact approved');
         })
         .catch(err => {
-            res.status(500).send(err);
+            res.status(418).send(err);
         })
 };

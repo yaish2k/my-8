@@ -21,7 +21,7 @@ createSchemas();
 const usersRoutes = require('./routes/user');
 const contactRequestRoutes = require('./routes/contact-request');
 
-app.use('/users', userRoutes);
+app.use('/users', usersRoutes);
 app.use('/contact-requests', contactRequestRoutes);
 
 module.exports = {
