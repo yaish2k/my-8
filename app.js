@@ -3,11 +3,13 @@ const dotenv = require('dotenv');
 dotenv.config();
 const bodyParser = require('body-parser');
 const config = require('./config/index');
+var cors = require('cors');
 const join = require('path').join;
 const models = join(__dirname, 'models');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
 
 function createSchemas() {
     config.schemaDepsOrder.forEach(file => {
