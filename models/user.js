@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { PHONE_VALIDATOR, IMAGE_VALIDATOR, EMAIL_VALIDATOR } = require('../utils/validators');
-validator = require('validator')
 const Schema = mongoose.Schema;
 /**
  * User Schema
@@ -9,13 +8,8 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
     created_at: { type: Date, default: Date.now },
     name: { type: String, default: '' },
-    email: {
-        unique: true,
-        immutable: true,
-        type: String,
-        validate: EMAIL_VALIDATOR,
-        required: [true, 'User email is required']
-    },
+    push_notifications_token: { type: String, default: '' },
+    os: { type: String, default: '' },
     phone_number: {
         unique: true,
         immutable: true,
@@ -87,13 +81,6 @@ UserSchema.methods = {
  */
 
 UserSchema.statics = {
-    /**
-     * getUserInformation
-     *
-     * @param {Object} options
-     * @param {Function} cb
-     * @api private
-     */
 
     createUser: function (body) {
         const UserModel = this;
