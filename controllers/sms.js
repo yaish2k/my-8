@@ -12,7 +12,7 @@ exports.sendSmsToUser = (req, res, next) => {
             res.status(201).send('SMS has been sent');
         })
         .catch(err => {
-            res.status(418).send(err);
+            res.status(418).send(err.message);
         })
 
 }

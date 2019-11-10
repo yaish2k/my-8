@@ -12,7 +12,7 @@ exports.callUser = (req, res, next) => {
             res.status(201).send('Call has been sent');
         })
         .catch(err => {
-            res.status(418).send(err);
+            res.status(418).send(err.message);
         })
 
 }

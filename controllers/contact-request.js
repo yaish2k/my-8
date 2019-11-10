@@ -24,10 +24,10 @@ exports.declineContactRequest = (req, res, next) => {
     ContactRequest
         .declineContactRequest(decliningUser, askingPhoneNumber)
         .then(_ => {
-            res.status(200).send('Contact declined')
+            res.status(200).send('Contact declined');
         })
         .catch(err => {
-            res.status(418).send(err)
+            res.status(418).send(err.message);
         })
 };
 
@@ -40,7 +40,7 @@ exports.approveContactRequest = (req, res, next) => {
             res.status(200).send('Contact approved');
         })
         .catch(err => {
-            res.status(418).send(err);
+            res.status(418).send(err.message);
         })
 };
 
@@ -53,7 +53,7 @@ exports.removeRequestFromWaitingList = (req, res, next) => {
             res.status(201).send('Contact request deleted');
         })
         .catch(err => {
-            res.status(418).send(err);
+            res.status(418).send(err.message);
         })
 }
 exports.getRequestsForCurrentUser = (req, res, next) => {
@@ -64,7 +64,7 @@ exports.getRequestsForCurrentUser = (req, res, next) => {
             res.status(200).json(currentUserRequests);
         })
         .catch(err => {
-            res.status(418).send(err);
+            res.status(418).send(err.message);
         })
 
 }

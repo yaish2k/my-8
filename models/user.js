@@ -63,13 +63,10 @@ UserSchema.methods = {
         // remove (this user) from contactId approved_contacts
         const UserModel = this.constructor;
         return UserModel
-            .findOneAndUpdate({ id: contactId },
-                {
-                    $pull:
-                    {
-                        approved_contacts: { user: this.id }
-                    }
-                })
+            .update({ _id: contactId },
+                { $pull: { approved_contacts: { user: this._id } } },
+                { safe: true, multi: true }
+            )
             .exec();
     },
 
@@ -134,10 +131,10 @@ UserSchema.statics = {
         const { id, image_url, phone_number, name } = userInformation;
         let userData = { id, image_url, phone_number, name };
         userData.approved_contacts = userInformation.approved_contacts
-        .toObject()
-        .map(contact => {
-            return Object.assign({ contact_alias_name: contact.contact_alias_name }, contact.user);
-        });
+            .toObject()
+            .map(contact => {
+                return Object.assign({ contact_alias_name: contact.contact_alias_name }, contact.user);
+            });
         userData.pending_list = userPendingList;
         userData.waiting_list = userWaitingList;
         return userData;

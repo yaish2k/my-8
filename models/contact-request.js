@@ -101,7 +101,7 @@ ContactRequestSechma.statics = {
             .findOne({
                 asking_user: askingUser._id,
                 target_phone_number: targetPhoneNumber,
-                stauts: status
+                status: status
             }).exec();
     },
 
