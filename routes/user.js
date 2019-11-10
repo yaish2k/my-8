@@ -12,8 +12,8 @@ router.post('/edit-user', tokenVerificationMiddleware, authenticationMiddleware,
 router.get('/get-user-info', tokenVerificationMiddleware, authenticationMiddleware,
     userController.getUserInformation);
 
-router.post('/remove-contacts', tokenVerificationMiddleware, authenticationMiddleware,
-    userController.removeContacts);
+router.post('/remove-contact', tokenVerificationMiddleware, authenticationMiddleware,
+    userController.removeContact);
 
 module.exports = router;
 

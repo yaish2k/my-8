@@ -28,14 +28,18 @@ const UserSchema = new Schema({
             user: { type: Schema.Types.ObjectId, ref: 'User' },
             contact_alias_name: { type: String, default: '' }
         }
-    ],
-    pending_contacts_requests: [
-        {
-            created_at: { type: Date, default: Date.now },
-            pending_req: { type: Schema.Types.ObjectId, ref: 'ContactRequest' }
-        }
     ]
+
 });
+UserSchema.virtual('id').get(function () {
+    return this._id.toHexString();
+});
+
+// Ensure virtual fields are serialised.
+UserSchema.set('toJSON', {
+    virtuals: true
+});
+
 
 /**
  * Methods
@@ -50,31 +54,25 @@ UserSchema.methods = {
         return this.save();
     },
 
-    removeContact(contact) {
+    async removeContact(contactId) {
         const newContactsArray =
             this.approved_contacts
-                .filter(c => c.user.toString() !== contact.id)
-
+                .filter(c => c.user.toString() !== contactId);
         this.approved_contacts = newContactsArray;
-        return this.save();
+        await this.save();
+        // remove (this user) from contactId approved_contacts
+        const UserModel = this.constructor;
+        return UserModel
+            .findOneAndUpdate({ id: contactId },
+                {
+                    $pull:
+                    {
+                        approved_contacts: { user: this.id }
+                    }
+                })
+            .exec();
     },
 
-    addPendingContactRequest(newContactRequest) {
-        this.pending_contacts_requests.push({
-            pending_req: newContactRequest._id
-        });
-        return this.save();
-    },
-
-    removePendingContactRequest(request) {
-
-        const newPendingRequestsArray =
-            this.pending_contacts_requests
-                .filter(pr => pr.pending_req.toString() !== request.id);
-        this.pending_contacts_requests = newPendingRequestsArray;
-        return this.save()
-
-    }
 }
 /**
  * Statics
@@ -82,43 +80,68 @@ UserSchema.methods = {
 
 UserSchema.statics = {
 
-    createUser: function (body) {
+    createUser(body) {
         const UserModel = this;
         let newUser = new UserModel(body);
         return newUser.save();
     },
 
-    editUser: function (userId, updatedFields) {
+    editUser(userId, updatedFields) {
         const UserModel = this;
         return UserModel.update({ _id: userId }, updatedFields);
     },
 
-    getUserByPhoneNumber: function (phoneNumber) {
+    getUserByPhoneNumber(phoneNumber) {
         const UserModel = this;
         return UserModel.
             findOne({ phone_number: phoneNumber })
             .exec();
     },
-    getUserInformation: function (userId) {
-        const UserModel = this;
-        return UserModel
+
+    async removeUserContactsByPhoneNumbersList(userId, phoneNumbersList) {
+        const userModel = this;
+        const userIntance = await UserModel
             .findById(userId)
             .populate({
-                path: 'approved_contacts',
-                populate: {
-                    path: 'user',
-                    model: 'User'
-                }
-            })
-            .populate({
-                path: 'pending_contacts_requests',
-                populate: {
-                    path: 'pending_req',
-                    model: 'ContactRequest'
-                }
-            }).exec()
-    }
+                path: 'approved_contacts.user',
+                model: 'User',
+                select: 'phone_number'
+            }).exec();
+        const newContactsArray = userInstance
+            .approved_contacts
+            .filter(contact =>
+                !_.includes(phoneNumbersList, contact.user.phone_number));
+        userInstance.approved_contacts = newContactsArray;
+        return this.save();
 
+    },
+
+    getUserInformation(userId) {
+        const UserModel = this;
+        return UserModel
+            .findOne({ _id: userId })
+            .populate({
+                path: 'approved_contacts.user',
+                model: 'User',
+                select: 'image_url phone_number name',
+            })
+            .exec();
+
+
+
+    },
+    serialize(userInformation, userPendingList, userWaitingList) {
+        const { id, image_url, phone_number, name } = userInformation;
+        let userData = { id, image_url, phone_number, name };
+        userData.approved_contacts = userInformation.approved_contacts
+        .toObject()
+        .map(contact => {
+            return Object.assign({ contact_alias_name: contact.contact_alias_name }, contact.user);
+        });
+        userData.pending_list = userPendingList;
+        userData.waiting_list = userWaitingList;
+        return userData;
+    }
 };
 
 mongoose.model('User', UserSchema);

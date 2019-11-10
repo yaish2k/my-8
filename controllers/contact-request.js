@@ -14,15 +14,15 @@ exports.createContactRequest = (req, res, next) => {
             res.sendStatus(201);
         })
         .catch(err => {
-            res.status(418).send(err);
+            res.status(418).send(err.message);
         })
 };
 
 exports.declineContactRequest = (req, res, next) => {
     const decliningUser = req.user;
-    const { targetPhoneNumberToDecline } = req.body;
+    const { askingPhoneNumber } = req.body;
     ContactRequest
-        .declineContactRequest(decliningUser, targetPhoneNumberToDecline)
+        .declineContactRequest(decliningUser, askingPhoneNumber)
         .then(_ => {
             res.status(200).send('Contact declined')
         })
@@ -33,9 +33,9 @@ exports.declineContactRequest = (req, res, next) => {
 
 exports.approveContactRequest = (req, res, next) => {
     const approvingUser = req.user;
-    const { targetPhoneNumberToApprove } = req.body;
+    const { askingPhoneNumber } = req.body;
     ContactRequest
-        .approveContactRequest(approvingUser, targetPhoneNumberToApprove)
+        .approveContactRequest(approvingUser, askingPhoneNumber)
         .then(_ => {
             res.status(200).send('Contact approved');
         })
@@ -43,3 +43,28 @@ exports.approveContactRequest = (req, res, next) => {
             res.status(418).send(err);
         })
 };
+
+exports.removeRequestFromWaitingList = (req, res, next) => {
+    const askingUser = req.user;
+    const { targetPhoneNumber } = req.body;
+    ContactRequest
+        .removeRequestFromWaitingList(askingUser, targetPhoneNumber)
+        .then(_ => {
+            res.status(201).send('Contact request deleted');
+        })
+        .catch(err => {
+            res.status(418).send(err);
+        })
+}
+exports.getRequestsForCurrentUser = (req, res, next) => {
+    const requestedUser = req.user;
+    ContactRequest
+        .getContactRequestsWhoRequestedPhoneNumber(requestedUser.phone_number)
+        .then(currentUserRequests => {
+            res.status(200).json(currentUserRequests);
+        })
+        .catch(err => {
+            res.status(418).send(err);
+        })
+
+}

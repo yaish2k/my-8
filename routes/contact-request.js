@@ -4,12 +4,15 @@ const { tokenVerificationMiddleware, authenticationMiddleware } = require('../co
 const router = express.Router();
 
 router.post('/create-contact-request', tokenVerificationMiddleware, authenticationMiddleware,
-    contactRequestController.createContactRequest);
-
-router.post('/decline-contact-request', tokenVerificationMiddleware, authenticationMiddleware,
-    contactRequestController.declineContactRequest);
+    contactRequestController.createContactRequest); // checked;
 
 router.post('/approve-contact-request', tokenVerificationMiddleware, authenticationMiddleware,
     contactRequestController.approveContactRequest);
+    
+router.post('/decline-contact-request', tokenVerificationMiddleware, authenticationMiddleware,
+    contactRequestController.declineContactRequest);
+
+router.post('/remove-request-from-waiting-list', tokenVerificationMiddleware, authenticationMiddleware,
+    contactRequestController.removeRequestFromWaitingList)
 
 module.exports = router;
