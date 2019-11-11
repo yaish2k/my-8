@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const { PHONE_VALIDATOR } = require('../utils/validators');
+const { FirebaseAdmin } = require('../utils/firebase');
 const Schema = mongoose.Schema;
 
 /**
@@ -161,6 +162,13 @@ ContactRequestSechma.statics = {
         } catch (err) {
             throw Error('Failed to add contact to user contact list');
         }
+
+        const notificationMessage = {
+            text: `You have beed approved by ${approvingUser.name}`,
+            phone: approvingUser.phone_number
+        }
+        return FirebaseAdmin.sendPushNotification(notificationMessage, askingUser);
+
     },
     /**
      * @param {*} askingUser 
