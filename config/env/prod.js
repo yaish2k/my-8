@@ -5,14 +5,24 @@ module.exports = {
         // 'call.js',
         // 'sms.js'
     ],
-    // nexmo: {
-    //     credentials: {
-    //         apiKey: process.env.NEXMO_API_KEY,
-    //         apiSecret: process.env.NEXMO_API_SECRET,
-    //         applicationId: process.env.NEXMO_APPLICATION_ID,
-    //         privateKey: process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH
-    //     }
-    // },
+    nexmo: {
+        SMS: {
+            SUCESS_MESSAGE_ID: "0",
+            MESSAGE_SEND_SUCCESSFULLY: 'Message sent successfully.',
+            MESSAGE_FAILED_WITH_ERROR: 'Message failed with error',
+        },
+        CALL: {
+            ACTION: 'talk',
+            VOICE_NAME: 'Kendra',
+            TYPE: 'phone'
+        },
+        credentials: {
+            apiKey: process.env.NEXMO_API_KEY || '',
+            apiSecret: process.env.NEXMO_API_SECRET || '',
+            applicationId: process.env.NEXMO_APPLICATION_ID || '',
+            privateKey: process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH || ''
+        }
+    },
     db: process.env.MONGODB_URL,
     firebase: {
         databaseURL: process.env.FIREBASE_DATABASE_URL,

@@ -1,14 +1,14 @@
 const config = require('./index');
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
-const { firebaseAdmin } = require('../utils/firebase')
+const { FirebaseAdmin } = require('../utils/firebase')
 
 exports.tokenVerificationMiddleware = (req, res, next) => {
     const token = req.headers.authorization;
     if (!token) {
         return res.status(401).send("Access denied. No token provided.");
     }
-    firebaseAdmin.auth().verifyIdToken(token)
+    FirebaseAdmin.verifyIdToken(token)
         .then(decodedToken => {
             req.userTokenId = decodedToken.uid || decodedToken.id;
             return next()
@@ -20,7 +20,7 @@ exports.tokenVerificationMiddleware = (req, res, next) => {
 
 exports.authenticationMiddleware = (req, res, next) => {
     const userId = req.userTokenId;
-    firebaseAdmin.auth().getUser(userId)
+    FirebaseAdmin.getUser(userId)
         .then(userRecord => {
             const userData = userRecord.toJSON();
             const { phoneNumber } = userData;
