@@ -5,6 +5,11 @@ const Schema = mongoose.Schema;
  * User Schema
  */
 
+const status = {
+    NOT_VALID: 'not_valid',
+    APPROVED: 'approved',
+}
+
 const UserSchema = new Schema({
     created_at: { type: Date, default: Date.now },
     name: { type: String, default: '' },
@@ -26,7 +31,8 @@ const UserSchema = new Schema({
         {
             created_at: { type: Date, default: Date.now },
             user: { type: Schema.Types.ObjectId, ref: 'User' },
-            contact_alias_name: { type: String, default: '' }
+            contact_alias_name: { type: String, default: '' },
+            status: {type: String, default: status.APPROVED}
         }
     ]
 
@@ -63,11 +69,10 @@ UserSchema.methods = {
         // remove (this user) from contactId approved_contacts
         const UserModel = this.constructor;
         return UserModel
-            .update({ _id: contactId },
-                { $pull: { approved_contacts: { user: this._id } } },
-                { safe: true, multi: true }
-            )
-            .exec();
+            .update({_id: contactId, approved_contacts: { $elemMatch:  { user: this._id }}, 
+                    { $set: { "approved_contacts.$.status" : status.NOT_VALID }}
+                   )
+                 .exec()
     },
 
 }
