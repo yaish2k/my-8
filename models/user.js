@@ -32,7 +32,7 @@ const UserSchema = new Schema({
             created_at: { type: Date, default: Date.now },
             user: { type: Schema.Types.ObjectId, ref: 'User' },
             contact_alias_name: { type: String, default: '' },
-            status: {type: String, default: status.APPROVED}
+            status: { type: String, default: status.APPROVED }
         }
     ]
 
@@ -69,10 +69,10 @@ UserSchema.methods = {
         // remove (this user) from contactId approved_contacts
         const UserModel = this.constructor;
         return UserModel
-            .update({_id: contactId, approved_contacts: { $elemMatch:  { user: this._id }}, 
-                    { $set: { "approved_contacts.$.status" : status.NOT_VALID }}
-                   )
-                 .exec()
+            .updateOne({ _id: contactId, approved_contacts: { $elemMatch: { user: this._id } } },
+                { $set: { "approved_contacts.$.status": status.NOT_VALID } }
+            )
+            .exec()
     },
 
 }
