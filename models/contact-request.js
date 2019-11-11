@@ -164,10 +164,16 @@ ContactRequestSechma.statics = {
         }
 
         const notificationMessage = {
-            text: `You have beed approved by ${approvingUser.name}`,
-            phone: approvingUser.phone_number
+            title: `You have beed approved by ${approvingUser.name}`,
+            body: approvingUser.phone_number
         }
-        return FirebaseAdmin.sendPushNotification(notificationMessage, askingUser);
+        const pushNotificationsToken = askingUser.push_notifications_token;
+        if (!pushNotifcationsToken) {
+            return;
+        } else {
+            return FirebaseAdmin.sendPushNotification(notificationMessage, pushNotificationsToken);
+        }
+
 
     },
     /**

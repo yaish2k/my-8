@@ -16,14 +16,10 @@ class FirebaseAdmin {
         return admin.auth().getUser(userId);
     }
 
-    static async sendPushNotification(notificationMessage, recievingUser) {
-        const registrationToken = recievingUser.push_notifications_token;
-        if (!recievingUser.push_notifications_token) {
-            throw Error("User Doesn't have valid notification token");
-        }
+    static async sendPushNotification(notificationMessage, pushNotificationsToken) {
         let message = {
-            data: notificationMessage,
-            token: registrationToken
+            notification: notificationMessage,
+            token: pushNotificationsToken
         }
         try {
             const response = await admin.messaging().send(message);
