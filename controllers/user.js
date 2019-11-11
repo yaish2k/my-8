@@ -6,7 +6,7 @@ exports.createUser = (req, res, next) => {
     const body = req.body;
     User.createUser(body)
         .then(_ => {
-            res.sendStatus(201);
+            res.status(200).send('Created');
         })
         .catch(err => {
             res.status(418).send(err.message);
@@ -16,7 +16,7 @@ exports.createUser = (req, res, next) => {
 exports.editUser = (req, res, next) => {
     const fieldsToUpdate = req.body;
     User.editUser(req.user.id, fieldsToUpdate)
-        .then(_ => res.sendStatus(200))
+        .then(_ => res.status(200).send('Edited'))
         .catch(err => res.status(418).send(err.message));
 };
 

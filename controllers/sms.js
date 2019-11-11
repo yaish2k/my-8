@@ -9,7 +9,7 @@ exports.sendSmsToUser = (req, res, next) => {
         targetPhoneCallToSend,
         smsText)
         .then(_ => {
-            res.status(201).send('SMS has been sent');
+            res.status(200).send('SMS has been sent');
         })
         .catch(err => {
             res.status(418).send(err.message);

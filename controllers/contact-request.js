@@ -11,7 +11,7 @@ exports.createContactRequest = (req, res, next) => {
             targetPhoneNumber,
             targetContactName)
         .then(_ => {
-            res.sendStatus(201);
+            res.status(200).send('Contact request created');
         })
         .catch(err => {
             res.status(418).send(err.message);
@@ -50,7 +50,7 @@ exports.removeRequestFromWaitingList = (req, res, next) => {
     ContactRequest
         .removeRequestFromWaitingList(askingUser, targetPhoneNumber)
         .then(_ => {
-            res.status(201).send('Contact request deleted');
+            res.status(200).send('Contact request deleted');
         })
         .catch(err => {
             res.status(418).send(err.message);

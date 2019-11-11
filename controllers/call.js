@@ -9,7 +9,7 @@ exports.callUser = (req, res, next) => {
         targetPhoneNumberToCall,
         textToSpeach)
         .then(_ => {
-            res.status(201).send('Call has been sent');
+            res.status(200).send('Call has been sent');
         })
         .catch(err => {
             res.status(418).send(err.message);
