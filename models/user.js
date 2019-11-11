@@ -125,7 +125,7 @@ UserSchema.statics = {
             .populate({
                 path: 'approved_contacts.user',
                 model: 'User',
-                select: 'image_url phone_number name',
+                select: 'image_url phone_number name status',
             })
             .exec();
 
