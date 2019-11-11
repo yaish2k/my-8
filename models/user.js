@@ -125,11 +125,9 @@ UserSchema.statics = {
             .populate({
                 path: 'approved_contacts.user',
                 model: 'User',
-                select: 'image_url phone_number name status',
+                select: 'image_url phone_number name',
             })
             .exec();
-
-
 
     },
     serialize(userInformation, userPendingList, userWaitingList) {
@@ -138,7 +136,11 @@ UserSchema.statics = {
         userData.approved_contacts = userInformation.approved_contacts
             .toObject()
             .map(contact => {
-                return Object.assign({ contact_alias_name: contact.contact_alias_name }, contact.user);
+                return Object.assign(
+                    {
+                        status: contact.status,
+                        contact_alias_name: contact.contact_alias_name
+                    }, contact.user);
             });
         userData.pending_list = userPendingList;
         userData.waiting_list = userWaitingList;
