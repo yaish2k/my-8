@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
-const { PHONE_VALIDATOR } = require('../utils/validators');
-const nexmo = require('../utils/nexmo');
+const { NexmoHandler } = require('../utils/nexmo');
 const Schema = mongoose.Schema;
 
 /**
@@ -22,7 +21,7 @@ const CallSchema = new Schema({
  * Statics
  */
 
-UserSchema.statics = {
+CallSchema.statics = {
     callUser: async function (callingUser,
         targetPhoneNumberToCall,
         textToSpeach) {
@@ -30,15 +29,14 @@ UserSchema.statics = {
         if (!textToSpeach) {
             throw Error('Text to speach must be specified');
         }
-        let targetUserToCall;
-        targetUserToCall = await User.getUserByPhoneNumber(targetPhoneNumberToCall);
-        if (!targetUserToCall) {
+        let userTargetToCall;
+        userTargetToCall = await User.getUserByPhoneNumber(targetPhoneNumberToCall);
+        if (!userTargetToCall) {
             throw Error('Target user to call not found');
         }
 
         try {
-            await nexmo.sendTextToSpeach(callingUser.phone_number,
-                targetUserToCall.phone_number,
+            await NexmoHandler.sendTextToSpeach(userTargetToCall.phone_number,
                 textToSpeach);
         } catch (err) {
             throw Error('Text to speach conversation failed');
@@ -46,7 +44,7 @@ UserSchema.statics = {
         const CallModel = this;
         let newCallInstance = new CallModel({
             from: callingUser._id,
-            target: targetUserToCall._id,
+            target: userTargetToCall._id,
             text_to_speach: textToSpeach,
         });
         try {

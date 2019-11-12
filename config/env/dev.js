@@ -2,10 +2,11 @@ module.exports = {
     schemaDepsOrder: [
         'user.js',
         'contact-request.js',
-        // 'call.js',
-        // 'sms.js'
+        'call.js',
+        'sms.js'
     ],
     nexmo: {
+        SERVER_PHONE_NUMBER: process.env.SERVER_PHONE_NUMBER,
         SMS: {
             SUCESS_MESSAGE_ID: "0",
             MESSAGE_SEND_SUCCESSFULLY: 'Message sent successfully.',
@@ -20,7 +21,7 @@ module.exports = {
             apiKey: process.env.NEXMO_API_KEY || '',
             apiSecret: process.env.NEXMO_API_SECRET || '',
             applicationId: process.env.NEXMO_APPLICATION_ID || '',
-            privateKey: process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH || ''
+            privateKey: JSON.parse(`"${process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH}"`) || ''
         }
     },
     db: process.env.MONGODB_URL,

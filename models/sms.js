@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const { PHONE_VALIDATOR } = require('../utils/validators');
-const nexmo = require('../utils/nexmo');
+const { NexmoHandler } = require('../utils/nexmo');
 const Schema = mongoose.Schema;
 
 /**
@@ -22,7 +22,7 @@ const SmsSchema = new Schema({
  * Statics
  */
 
-UserSchema.statics = {
+SmsSchema.statics = {
     sendSmsToUser: async function (sendingUser,
         targetPhoneCallToSend,
         smsText) {
@@ -35,8 +35,10 @@ UserSchema.statics = {
             throw Error('Target user to send not found');
         }
 
+        let messageWasSent;
+
         try {
-            await nexmo.sendSMS(sendingUser.phone_number,
+            messageWasSent = await NexmoHandler.sendSmsMessage(sendingUser.phone_number,
                 targetUserToSend.phone_number,
                 smsText);
         } catch (err) {
@@ -49,7 +51,8 @@ UserSchema.statics = {
             sms_text: smsText,
         });
         try {
-            return await smsInstance.save();
+            await smsInstance.save();
+            return messageWasSent;
         } catch (err) {
             throw new Error('Failed to create sms intance on db');
         }
