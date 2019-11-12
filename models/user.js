@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { PHONE_VALIDATOR, IMAGE_VALIDATOR, EMAIL_VALIDATOR } = require('../utils/validators');
 const Schema = mongoose.Schema;
+const { castToObjectId, castToId } = require('../utils/utilities');
+const _ = require('lodash');
 /**
  * User Schema
  */
@@ -53,28 +55,21 @@ UserSchema.set('toJSON', {
 
 UserSchema.methods = {
     addContact(contactUser, contactAliasName) {
-        this.approved_contacts.push({
-            contact_alias_name: contactAliasName,
-            user: contactUser._id
-        });
-        return this.save();
+        const UserModel = this.constructor;
+        existingContact = UserModel.getContactOfUserById(this, contactUser._id);
+        if (existingContact && existingContact.status === status.NOT_VALID) {
+            return UserModel.updateUserContactStatus(this._id, contactUser._id, status.APPROVED);
+        } else {
+            return UserModel.addContactToArray(this, contactUser._id, contactAliasName);
+        }
     },
 
     async removeContact(contactId) {
-        const newContactsArray =
-            this.approved_contacts
-                .filter(c => c.user.toString() !== contactId);
-        this.approved_contacts = newContactsArray;
-        await this.save();
-        // remove (this user) from contactId approved_contacts
         const UserModel = this.constructor;
-        return UserModel
-            .updateOne({ _id: contactId, approved_contacts: { $elemMatch: { user: this._id } } },
-                { $set: { "approved_contacts.$.status": status.NOT_VALID } }
-            )
-            .exec()
+        await UserModel.removeContactFromArray(this, contactId);
+        // in the contact list i need to update myself to not valid
+        return UserModel.updateUserContactStatus(contactId, this._id, status.NOT_VALID);
     },
-
 }
 /**
  * Statics
@@ -90,7 +85,46 @@ UserSchema.statics = {
 
     editUser(userId, updatedFields) {
         const UserModel = this;
-        return UserModel.update({ _id: userId }, updatedFields);
+        return UserModel.updateOne({ _id: userId }, updatedFields);
+    },
+
+    getContactOfUserById(user, contactId) {
+        approvedContact = _.find(user.approved_contacts, (c) => {
+            c.user.toString() !== castToId(contactId);
+        })
+        return approvedContact;
+    },
+
+    removeContactFromArray(user, contactId) {
+        const newContactsArray =
+            user.approved_contacts
+                .filter(c => c.user.toString() !== contactId);
+        user.approved_contacts = newContactsArray;
+        return user.save();
+    },
+
+    addContactToArray(user, contactId, contactAliasName) {
+        user.approved_contacts.push({
+            contact_alias_name: contactAliasName,
+            user: castToObjectId(contactId)
+        });
+        return user.save();
+    },
+
+    updateUserContactStatus(userIdToUpdate, contactId, status) {
+        const UserModel = this;
+        return UserModel
+            .updateOne({ _id: castToObjectId(userIdToUpdate), approved_contacts: { $elemMatch: { user: castToObjectId(contactId) } } },
+                { $set: { "approved_contacts.$.status": status } }
+            )
+            .exec();
+    },
+
+    async createMatchBetweenUsers(askingUser,
+        approvingUser,
+        approvingUserAliasName) {
+        await askingUser.addContact(approvingUser, approvingUserAliasName);
+        await approvingUser.addContact(askingUser, askingUser.name);
     },
 
     getUserByPhoneNumber(phoneNumber) {

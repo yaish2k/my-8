@@ -132,7 +132,8 @@ ContactRequestSechma.statics = {
      * @param {*} approvingUser 
      * @param {*} askingPhoneNumber 
      */
-    approveContactRequest: async function (approvingUser,
+
+    async approveContactRequest(approvingUser,
         askingPhoneNumber) {
         const ContactRequestModel = this;
         let askingUser;
@@ -144,63 +145,89 @@ ContactRequestSechma.statics = {
         }
         // get contact request for the for asking user
         const contactRequest = await this.getContactRequest(askingUser,
-            approvingUser.phone_number, status.PENDING)
+            approvingUser.phone_number, status.PENDING);
         if (!contactRequest) {
             throw new Error("Contact request doesn't exist");
         }
+        const approvingUserAliasName = contactRequest.target_contact_name;
+        this.removeContactRequest(contactRequest);
+        await this.createMatchBetweenUsers(askingUser, approvingUser, approvingUserAliasName);
+        return this.sendPushNotificationToAskingUser(askingUser, approvingUser);
 
-        const approvingUserContactAliasName = contactRequest.target_contact_name;
-        try {
-            contactRequest.remove();
-        } catch (err) {
-            throw Error('Failed to delete contact request');
-        }
+    },
 
-        try {
-            askingUser.addContact(approvingUser, approvingUserContactAliasName);
-            approvingUser.addContact(askingUser, askingUser.name)
-        } catch (err) {
-            throw Error('Failed to add contact to user contact list');
-        }
-
+    sendPushNotificationToAskingUser(askingUser, approvingUser) {
         const notificationMessage = {
             title: `You have beed approved by ${approvingUser.name}`,
             body: approvingUser.phone_number
         }
         const pushNotificationsToken = askingUser.push_notifications_token;
-        if (!pushNotifcationsToken) {
+        if (!pushNotificationsToken) {
             return;
         } else {
             return FirebaseAdmin.sendPushNotification(notificationMessage, pushNotificationsToken);
         }
+    },
 
+    createMatchBetweenUsers(
+        askingUser,
+        approvingUser,
+        approvingUserAliasName) {
+        try {
+            return User.createMatchBetweenUsers(askingUser, approvingUser, approvingUserAliasName);
+        } catch (err) {
+            throw Error('Failed to create match between contacts');
+        }
 
     },
+    removeContactRequest(contactRequest) {
+        try {
+            contactRequest.remove();
+        } catch (err) {
+            throw Error('Failed to delete contact request');
+        }
+    },
+
     /**
      * @param {*} askingUser 
      * @param {*} targetPhoneNumber 
-     * @param {*} targetPhoneNumber 
+     * @param {*} targetContactName 
      */
+
     createContactRequest: async function (askingUser,
         targetPhoneNumber,
         targetContactName) {
-        const ContactRequestModel = this;
-
         // check if  contact request exists for the for asking user
         const contactRequest = await this.getContactRequest(askingUser,
             targetPhoneNumber, status.PENDING)
         if (contactRequest) {
             throw new Error('Contact request already exists');
         }
-
         // create and save new ContactRequest
-        let newContactRequest = new ContactRequestModel({
-            asking_user: askingUser._id,
+        return this.createContactRequestInstance(
+            askingUser._id,
+            targetContactName,
+            targetPhoneNumber
+        );
+    },
+
+    /**
+     * @param {*} askingUserId 
+     * @param {*} targetContactName 
+     * @param {*} targetPhoneNumber 
+     */
+
+    createContactRequestInstance(
+        askingUserId,
+        targetContactName,
+        targetPhoneNumber) {
+        const ContactRequestModel = this;
+        const newContactRequest = new ContactRequestModel({
+            asking_user: askingUserId,
             target_contact_name: targetContactName,
             target_phone_number: targetPhoneNumber,
         });
-        return await newContactRequest.save();
-
+        return newContactRequest.save();
     },
     removeRequestFromWaitingList(askingUser, targetPhoneNumber) {
         const ContactRequestModel = this;
