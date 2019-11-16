@@ -8,11 +8,13 @@ module.exports = {
     nexmo: {
         SERVER_PHONE_NUMBER: process.env.SERVER_PHONE_NUMBER,
         SMS: {
+            MESSAGES_MAX_BALANCE: 6,
             SUCESS_MESSAGE_ID: "0",
-            MESSAGE_SEND_SUCCESSFULLY: 'Message sent successfully.',
-            MESSAGE_FAILED_WITH_ERROR: 'Message failed with error',
+            SERVER_MESSAGE: '{0} is looking for you urgently',
         },
         CALL: {
+            CALLS_MAX_BALANCE: 6,
+            SERVER_MESSAGE: '{0} is looking for you urgently',
             ACTION: 'talk',
             VOICE_NAME: 'Kendra',
             TYPE: 'phone'

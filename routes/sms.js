@@ -6,3 +6,5 @@ const router = express.Router();
 
 router.post('/send-sms-to-user', tokenVerificationMiddleware, authenticationMiddleware,
     smsController.sendSmsToUser);
+
+module.exports = router;

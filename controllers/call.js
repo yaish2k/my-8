@@ -1,18 +1,13 @@
 const mongoose = require('mongoose');
 const Call = mongoose.model('Call');
+const { asyncMiddleware } = require('../config/middlewares');
+const { ConversationWasCreatedSuccessfullyResponse } = require('../utils/responses');
 
-exports.callUser = (req, res, next) => {
+exports.callUser = asyncMiddleware(async (req, res, next) => {
     const callingUser = req.user;
-    const { targetPhoneNumberToCall,
-        textToSpeach } = req.body;
-    Call.callUser(callingUser,
-        targetPhoneNumberToCall,
-        textToSpeach)
-        .then(_ => {
-            res.status(200).send('Call has been sent');
-        })
-        .catch(err => {
-            res.status(418).send(err.message);
-        })
+    const { targetPhoneNumberToCall } = req.body;
+    await Call.callUser(callingUser,
+        targetPhoneNumberToCall);
+    res.status(200).send(new ConversationWasCreatedSuccessfullyResponse());
 
-}
+});

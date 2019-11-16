@@ -6,3 +6,5 @@ const router = express.Router();
 
 router.post('/call-user', tokenVerificationMiddleware, authenticationMiddleware,
     callController.callUser);
+
+module.exports = router;

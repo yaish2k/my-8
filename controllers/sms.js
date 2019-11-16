@@ -1,18 +1,13 @@
 const mongoose = require('mongoose');
 const SMS = mongoose.model('SMS');
+const { asyncMiddleware } = require('../config/middlewares');
+const { SmsWasSentSuccessfullyResponse } = require('../utils/responses');
 
-exports.sendSmsToUser = (req, res, next) => {
+exports.sendSmsToUser = asyncMiddleware(async (req, res, next) => {
     const sendingUser = req.user;
-    const { targetPhoneCallToSend,
-        smsText } = req.body;
-    SMS.sendSmsToUser(sendingUser,
-        targetPhoneCallToSend,
-        smsText)
-        .then(_ => {
-            res.status(200).send('SMS has been sent');
-        })
-        .catch(err => {
-            res.status(418).send(err.message);
-        })
+    const { targetPhoneCallToSend } = req.body;
+    const successMessage = await SMS.sendSmsToUser(sendingUser,
+        targetPhoneCallToSend);
+    res.status(200).send(new SmsWasSentSuccessfullyResponse());
 
-}
+});

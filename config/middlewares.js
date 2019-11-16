@@ -1,8 +1,15 @@
 const config = require('./index');
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
-const { FirebaseAdmin } = require('../utils/firebase')
+const { FirebaseAdmin } = require('../utils/firebase');
 
+exports.asyncMiddleware = (controllerFn) => {
+    return (req, res, next) => {
+        controllerFn(req, res, next).catch(err => {
+            next(err);
+        });
+    }
+}
 exports.tokenVerificationMiddleware = (req, res, next) => {
     const token = req.headers.authorization;
     if (!token) {

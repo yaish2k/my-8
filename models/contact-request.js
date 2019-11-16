@@ -3,6 +3,7 @@ const User = mongoose.model('User');
 const { PHONE_VALIDATOR } = require('../utils/validators');
 const { FirebaseAdmin } = require('../utils/firebase');
 const Schema = mongoose.Schema;
+const { DatabaseError, ItegrityError } = require('../utils/errors');
 
 /**
  * ContactRequest Schema
@@ -117,15 +118,20 @@ ContactRequestSechma.statics = {
 
         askingUser = await User.getUserByPhoneNumber(askingPhoneNumber);
         if (!askingUser) {
-            throw Error('User not found');
+            throw new DatabaseError('User not found');
         }
         // get contact request for the for asking user
         const contactRequest = await this.getContactRequest(askingUser,
             decliningUser.phone_number, status.PENDING)
         if (!contactRequest) {
-            throw new Error("Contact request doesn't exist");
+            throw new DatabaseError("Contact request doesn't exist");
         }
-        return contactRequest.changeStatus(status.DECLINED);
+        try {
+            return contactRequest.changeStatus(status.DECLINED);
+        } catch (err) {
+            throw new DatabaseError("Failed to update contact request status");
+        }
+
     },
 
     /**
@@ -141,14 +147,19 @@ ContactRequestSechma.statics = {
 
         askingUser = await User.getUserByPhoneNumber(askingPhoneNumber);
         if (!askingUser) {
-            throw Error('User not found');
+            throw new DatabaseError('User not found');
         }
         // get contact request for the for asking user
         const contactRequest = await this.getContactRequest(askingUser,
             approvingUser.phone_number, status.PENDING);
         if (!contactRequest) {
-            throw new Error("Contact request doesn't exist");
+            throw new DatabaseError("Contact request doesn't exist");
         }
+        const askingUserAsContact = User.getContactOfUserById(approvingUser, askingUser._id);
+        if (askingUserAsContact) {
+            throw new ItegrityError('Asking user is already part of the approving user contacts');
+        }
+
         const approvingUserAliasName = contactRequest.target_contact_name;
         this.removeContactRequest(contactRequest);
         await this.createMatchBetweenUsers(askingUser, approvingUser, approvingUserAliasName);
@@ -176,7 +187,7 @@ ContactRequestSechma.statics = {
         try {
             return User.createMatchBetweenUsers(askingUser, approvingUser, approvingUserAliasName);
         } catch (err) {
-            throw Error('Failed to create match between contacts');
+            throw new DatabaseError('Failed to create match between contacts');
         }
 
     },
@@ -184,7 +195,7 @@ ContactRequestSechma.statics = {
         try {
             contactRequest.remove();
         } catch (err) {
-            throw Error('Failed to delete contact request');
+            throw new DatabaseError('Failed to delete contact request');
         }
     },
 
@@ -201,14 +212,32 @@ ContactRequestSechma.statics = {
         const contactRequest = await this.getContactRequest(askingUser,
             targetPhoneNumber, status.PENDING)
         if (contactRequest) {
-            throw new Error('Contact request already exists');
+            throw new DatabaseError('Contact request already exists');
+        }
+
+        // check if the target user is already part of my contacts
+        let isAlreadyPartOfMyContacts = false;
+        targetUser = await User.getUserByPhoneNumber(targetPhoneNumber)
+        if (targetUser) {
+            const targetContact = User.getContactOfUserById(askingUser, targetUser._id);
+            if (targetContact) {
+                isAlreadyPartOfMyContacts = true;
+            }
+        }
+        if (isAlreadyPartOfMyContacts) {
+            throw new ItegrityError('Target user is already part of the requesting user approved contacts');
         }
         // create and save new ContactRequest
-        return this.createContactRequestInstance(
-            askingUser._id,
-            targetContactName,
-            targetPhoneNumber
-        );
+        try {
+            return this.createContactRequestInstance(
+                askingUser._id,
+                targetContactName,
+                targetPhoneNumber
+            );
+        } catch (err) {
+            throw new DatabaseError('Failed to create contact request');
+        }
+
     },
 
     /**

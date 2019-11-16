@@ -89,9 +89,9 @@ UserSchema.statics = {
     },
 
     getContactOfUserById(user, contactId) {
-        approvedContact = _.find(user.approved_contacts, (c) => {
-            c.user.toString() !== castToId(contactId);
-        })
+        approvedContact = user.approved_contacts.find(c =>  {
+            return c.user.toString() === castToId(contactId);
+        });
         return approvedContact;
     },
 

@@ -1,70 +1,45 @@
 const mongoose = require('mongoose');
 const ContactRequest = mongoose.model('ContactRequest');
+const { asyncMiddleware } = require('../config/middlewares');
+const { ContactRequestCreatedResponse,
+    ContactRequestDeclinedResponse, ContactRequestApprovedResponse, ContactRequestRemovedResponse } = require('../utils/responses');
+const { DatabaseError } = require('../utils/errors');
 
-
-exports.createContactRequest = (req, res, next) => {
+exports.createContactRequest = asyncMiddleware(async (req, res, next) => {
     const askingUser = req.user;
     const { targetPhoneNumber, targetContactName } = req.body;
-    ContactRequest
-        .createContactRequest(
-            askingUser,
-            targetPhoneNumber,
-            targetContactName)
-        .then(_ => {
-            res.status(200).send('Contact request created');
-        })
-        .catch(err => {
-            res.status(418).send(err.message);
-        })
-};
+    await ContactRequest
+        .createContactRequest(askingUser, targetPhoneNumber, targetContactName);
+    res.status(200).send(new ContactRequestCreatedResponse());
+});
 
-exports.declineContactRequest = (req, res, next) => {
+exports.declineContactRequest = asyncMiddleware(async (req, res, next) => {
     const decliningUser = req.user;
     const { askingPhoneNumber } = req.body;
-    ContactRequest
-        .declineContactRequest(decliningUser, askingPhoneNumber)
-        .then(_ => {
-            res.status(200).send('Contact declined');
-        })
-        .catch(err => {
-            res.status(418).send(err.message);
-        })
-};
+    await ContactRequest
+        .declineContactRequest(decliningUser, askingPhoneNumber);
+    res.status(200).send(new ContactRequestDeclinedResponse());
+});
 
-exports.approveContactRequest = (req, res, next) => {
+exports.approveContactRequest = asyncMiddleware(async (req, res, next) => {
     const approvingUser = req.user;
     const { askingPhoneNumber } = req.body;
-    ContactRequest
+    await ContactRequest
         .approveContactRequest(approvingUser, askingPhoneNumber)
-        .then(_ => {
-            res.status(200).send('Contact approved');
-        })
-        .catch(err => {
-            res.status(418).send(err.message);
-        })
-};
+    res.status(200).send(new ContactRequestApprovedResponse());
+});
 
-exports.removeRequestFromWaitingList = (req, res, next) => {
+exports.removeRequestFromWaitingList = asyncMiddleware(async (req, res, next) => {
     const askingUser = req.user;
     const { targetPhoneNumber } = req.body;
-    ContactRequest
-        .removeRequestFromWaitingList(askingUser, targetPhoneNumber)
-        .then(_ => {
-            res.status(200).send('Contact request deleted');
-        })
-        .catch(err => {
-            res.status(418).send(err.message);
-        })
-}
-exports.getRequestsForCurrentUser = (req, res, next) => {
-    const requestedUser = req.user;
-    ContactRequest
-        .getContactRequestsWhoRequestedPhoneNumber(requestedUser.phone_number)
-        .then(currentUserRequests => {
-            res.status(200).json(currentUserRequests);
-        })
-        .catch(err => {
-            res.status(418).send(err.message);
-        })
+    try {
+        await ContactRequest
+            .removeRequestFromWaitingList(askingUser, targetPhoneNumber)
+        res.status(200).send(new ContactRequestRemovedResponse());
+    } catch (err) {
+        return new DatabaseError('Failed to remove request from waiting list');
+    }
 
-}
+
+});
+
