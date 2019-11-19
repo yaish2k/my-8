@@ -22,7 +22,7 @@ class FirebaseAdmin {
         let message = {
             notification: notificationMessage,
             token: pushNotificationsToken,
-            data: pushNotificationData
+            data: JSON.stringify(pushNotificationData)
         }
         try {
             const response = await admin.messaging().send(message);
