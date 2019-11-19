@@ -98,13 +98,10 @@ ContactRequestSechma.statics = {
     async declineContactRequest(decliningUser,
         askingPhoneNumber) {
         let askingUser;
-        // fetch the asking user by the askingPhoneNumber
-
         askingUser = await User.getUserByPhoneNumber(askingPhoneNumber);
         if (!askingUser) {
             throw new DatabaseError('User not found');
         }
-        // get contact request for the for asking user
         const contactRequest = await this.getContactRequest(askingUser,
             decliningUser.phone_number, status.PENDING)
         if (!contactRequest) {
@@ -122,13 +119,10 @@ ContactRequestSechma.statics = {
         askingPhoneNumber) {
         const ContactRequestModel = this;
         let askingUser;
-        // fetch the asking user by the askingPhoneNumber
-
         askingUser = await User.getUserByPhoneNumber(askingPhoneNumber);
         if (!askingUser) {
             throw new DatabaseError('User not found');
         }
-        // get contact request for the for asking user
         const contactRequest = await this.getContactRequest(askingUser,
             approvingUser.phone_number, status.PENDING);
         if (!contactRequest) {
@@ -138,7 +132,6 @@ ContactRequestSechma.statics = {
         if (askingUserAsContact && askingUserAsContact.status === 'approved') {
             throw new ItegrityError('Asking user is already part of the approving user contacts');
         }
-
         const approvingUserAliasName = contactRequest.target_contact_name;
         this.removeContactRequest(contactRequest);
         await this.createMatchBetweenUsers(askingUser, approvingUser, approvingUserAliasName);
@@ -186,19 +179,14 @@ ContactRequestSechma.statics = {
     createContactRequest: async function (askingUser,
         targetPhoneNumber,
         targetContactName) {
-        // check if  contact request exists for the for asking user
         const contactRequest = await this.getContactRequest(askingUser,
             targetPhoneNumber, status.PENDING)
         if (contactRequest) {
             throw new ItegrityError('Contact request already exists');
         }
-
-        // check if user allow to add another contact
         if (!askingUser.isAllowToAddAnotherContact()) {
             throw new MaxiumEightUsersError(`user is not allowed to add more than ${appSettings.MAX_APPROVED_CONTACTS}`);
         }
-
-        // check if the target user is already part of my contacts
         let isAlreadyPartOfMyContacts = false;
         targetUser = await User.getUserByPhoneNumber(targetPhoneNumber)
         if (targetUser) {
@@ -210,7 +198,6 @@ ContactRequestSechma.statics = {
         if (isAlreadyPartOfMyContacts) {
             throw new ItegrityError('Target user is already part of the requesting user approved contacts');
         }
-        // create and save new ContactRequest
         try {
             return this.createContactRequestInstance(
                 askingUser._id,

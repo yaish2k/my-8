@@ -9,6 +9,7 @@ const models = join(__dirname, 'models');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(require('morgan')('dev'));
 app.use(cors());
 
 function createSchemas() {
