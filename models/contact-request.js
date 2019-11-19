@@ -4,6 +4,7 @@ const { PHONE_VALIDATOR } = require('../utils/validators');
 const { FirebaseAdmin } = require('../utils/firebase');
 const { formatString } = require('../utils/utilities')
 const Schema = mongoose.Schema;
+const appSettings = require('../config/index').app;
 const { STATUS_CODES } = require('../utils/status_codes');
 const { DatabaseError, ItegrityError, MaxiumEightUsersError } = require('../utils/errors');
 
@@ -55,11 +56,7 @@ ContactRequestSechma.methods = {
 
 ContactRequestSechma.statics = {
 
-    /**
-     * all the contacts that the user requested (can be only from ContactRequest type) 
-     * @param {*} askingUserId 
-     * @returns [ContactRequest] list of requests created by the asking user
-     */
+
     getUserWaitingList(askingUserId) {
         const ContactRequestModel = this;
         return ContactRequestModel
@@ -68,13 +65,7 @@ ContactRequestSechma.statics = {
             .lean(true)
             .exec()
     },
-    /**
-     * all the contacts that waits for this user to confirm them
-     * the user may not be exist thats why we use requestedUserPhoneNumber param 
-     * (contacts must be only User type)
-     * @param {*} requestedUserPhoneNumber 
-     * @returns [User] list of asking users
-     */
+
     async getUserPendingList(requestedUserPhoneNumber) {
         const ContactRequestModel = this;
         const contactRequestsArray =
@@ -93,12 +84,6 @@ ContactRequestSechma.statics = {
             .map(contactRequest => contactRequest.asking_user);
     },
 
-    /**
-     * retrieve a contact request
-     * @param {*} askingUser 
-     * @param {*} targetPhoneNumber 
-     * @returns ContactRequest instance
-     */
     getContactRequest(askingUser, targetPhoneNumber, status) {
         const ContactRequestModel = this;
         return ContactRequestModel
@@ -109,10 +94,7 @@ ContactRequestSechma.statics = {
             }).exec();
     },
 
-    /**
-     * @param {*} decliningUser 
-     * @param {*} askingPhoneNumber 
-     */
+
     async declineContactRequest(decliningUser,
         askingPhoneNumber) {
         let askingUser;
@@ -212,7 +194,7 @@ ContactRequestSechma.statics = {
 
         // check if user allow to add another contact
         if (!askingUser.isAllowToAddAnotherContact()) {
-            throw new MaxiumEightUsersError(`user is not allowed to add more than ${appSetting.NUMOF}`);
+            throw new MaxiumEightUsersError(`user is not allowed to add more than ${appSettings.MAX_APPROVED_CONTACTS}`);
         }
 
         // check if the target user is already part of my contacts
