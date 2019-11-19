@@ -6,8 +6,15 @@ const { SmsWasSentSuccessfullyResponse } = require('../utils/responses');
 exports.sendSmsToUser = asyncMiddleware(async (req, res, next) => {
     const sendingUser = req.user;
     const { targetPhoneCallToSend } = req.body;
-    const successMessage = await SMS.sendSmsToUser(sendingUser,
+    await SMS.sendSmsToUser(sendingUser,
         targetPhoneCallToSend);
     res.status(200).send(new SmsWasSentSuccessfullyResponse());
+});
+
+exports.updateSmsStatus = asyncMiddleware(async (req, res, next) => {
+    const message = req.messageInstance;
+    await SMS.updateSmsStatusToRecieved(message)
+    await SMS.sendPushNotification(message);
+    res.statusCode(200);
 
 });

@@ -10,7 +10,7 @@ module.exports = {
         SMS: {
             MESSAGES_MAX_BALANCE: 6,
             SUCESS_MESSAGE_ID: "0",
-            SERVER_MESSAGE: '{0} is looking for you urgently',
+            SERVER_MESSAGE: '{0} is looking for you urgently'
         },
         CALL: {
             CALLS_MAX_BALANCE: 6,
@@ -25,6 +25,9 @@ module.exports = {
             applicationId: process.env.NEXMO_APPLICATION_ID || '',
             privateKey: JSON.parse(`"${process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH}"`) || ''
         }
+    },
+    app: {
+        MAX_APPROVED_CONTACTS: 8,
     },
     db: process.env.MONGODB_URL,
     firebase: {

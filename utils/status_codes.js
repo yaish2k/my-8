@@ -45,7 +45,7 @@ STATUS_CODES = {
     },
     STATUS_2003: {
         code: 2003,
-        message: 'sms was recieved by {0}' // send by push notification to the sender somehow
+        message: 'Sms was recieved to {0}' // send by push notification to the sender somehow
     },
     STATUS_2004: {
         code: 2004,

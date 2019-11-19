@@ -4,6 +4,7 @@ const { NexmoHandler } = require('../utils/nexmo');
 const { formatString } = require('../utils/utilities');
 const nexmoSettings = require('../config/index').nexmo;
 const Schema = mongoose.Schema;
+const { FirebaseAdmin } = require('../utils/firebase');
 const { DatabaseError, PhoneCallsAmountExeededError, NexmoPhoneCallsServiceError } = require('../utils/errors');
 
 /**
@@ -39,6 +40,41 @@ CallSchema.statics = {
 
     userAllowsToMakeAnotherCall(currentCallsBalance) {
         return currentCallsBalance + 1 <= nexmoSettings.CALL.CALLS_MAX_BALANCE;
+    },
+
+    getCallByConversationId(conversationId) {
+        const CallModel = this;
+        return CallModel
+            .findOne({ nexmo_conversation_id: conversationId })
+            .exec();
+    },
+
+    updateClassStatusToAnswered(callInstance) {
+        callInstance.status = CONVERSATION_STATUS.ANSWERED;
+        return callInstance.save()
+    },
+
+    async sendPushNotifcation(callInstance) {
+        const callerId = callInstance.caller;
+        const recieverId = callInstance.reciever;
+        const callingUser = await User.getUserById(callerId);
+        const recieverUser = await User.getUserById(recieverId);
+        if (!callingUser || !recieverUser) { // use logs
+            throw new DatabaseError('Sender / Reciever users not found');
+        }
+        const pushNotificationsToken = senderUser.push_notifications_token;
+        if (pushNotificationsToken) {
+            const pushNotificationMessage = {
+                title: 'Call received',
+                body: formatString(STATUS_CODES.STATUS_2004.message, recieverUser.name)
+            }
+            const pushNotificationData = {
+                status_code: STATUS_CODES.STATUS_2004.code
+            }
+            FirebaseAdmin.sendPushNotification(pushNotificationMessage,
+                pushNotificationData,
+                notificationData);
+        }
     },
 
     async callUser(callingUser, targetPhoneNumberToCall) {

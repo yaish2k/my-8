@@ -2,21 +2,25 @@ const port = parseInt(process.env.PORT) || 3000;
 const { app } = require('./app');
 const mongoose = require('mongoose');
 const config = require('./config/index');
-const {BaseError} = require('./utils/errors');
+const { BaseError } = require('./utils/errors');
 
 
-app.use(function errorHandling(err, req, res, next) {
+app.use(function errorHandlingMiddleware(err, req, res, next) {
+    const errorObject = handleError(err);
+    res.status(418).json(errorObject);
+});
+
+function handleError(err) {
     if (err instanceof BaseError) {
         let messageObject = JSON.parse(err.message);
-        res.status(418).json({
+        return {
             message: messageObject.message,
             code: messageObject.code,
             errorName: err.errorName
-        });
-    } else {
-        res.status(418).json({ message: err.message });
+        };
     }
-});
+    return { message: err.message };
+}
 
 function listen() {
     app.listen(port);

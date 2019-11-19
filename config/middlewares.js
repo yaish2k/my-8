@@ -1,6 +1,8 @@
 const config = require('./index');
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
+const SMS = mongoose.model('SMS')
+const Call = mongoose.model('Call');
 const { FirebaseAdmin } = require('../utils/firebase');
 
 exports.asyncMiddleware = (controllerFn) => {
@@ -39,7 +41,36 @@ exports.authenticationMiddleware = (req, res, next) => {
         })
         .catch(err => {
             return res.status(404).send("User not found.");
-        })
+        });
 
 }
 
+exports.messageStatusCallbackMiddleware = async (req, res, next) => {
+    const { messageId, status } = req.body
+    try {
+        const messageInstance = await SMS.getSmsByMessageId(messageId);
+        if (messageInstance && status === 'accepted') {
+            req.messageInstance = messageInstance;
+            return next();
+        } else {
+            return res.statusCode(403);
+        }
+    } catch (err) {
+        return res.statusCode(403);
+    }
+}
+
+exports.conversationStatusCallbackMiddleware = async (req, res, next) => {
+    const { conversation_uuid, status } = req.body;
+    try {
+        const callInstance = await Call.getCallByConversationId(conversation_uuid);
+        if (callInstance && status === 'started') {
+            req.callInstance = callInstance;
+            return next();
+        } else {
+            return res.statusCode(403);
+        }
+    } catch (err) {
+        return res.statusCode(403);
+    }
+}

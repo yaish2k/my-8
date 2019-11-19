@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const { PHONE_VALIDATOR } = require('../utils/validators');
 const { FirebaseAdmin } = require('../utils/firebase');
+const { formatString } = require('../utils/utilities')
 const Schema = mongoose.Schema;
-const { DatabaseError, ItegrityError } = require('../utils/errors');
+const { STATUS_CODES } = require('../utils/status_codes');
+const { DatabaseError, ItegrityError, MaxiumEightUsersError } = require('../utils/errors');
 
 /**
  * ContactRequest Schema
@@ -134,11 +136,6 @@ ContactRequestSechma.statics = {
 
     },
 
-    /**
-     * @param {*} approvingUser 
-     * @param {*} askingPhoneNumber 
-     */
-
     async approveContactRequest(approvingUser,
         askingPhoneNumber) {
         const ContactRequestModel = this;
@@ -156,7 +153,7 @@ ContactRequestSechma.statics = {
             throw new DatabaseError("Contact request doesn't exist");
         }
         const askingUserAsContact = User.getContactOfUserById(approvingUser, askingUser._id);
-        if (askingUserAsContact) {
+        if (askingUserAsContact && askingUserAsContact.status === 'approved') {
             throw new ItegrityError('Asking user is already part of the approving user contacts');
         }
 
@@ -168,15 +165,19 @@ ContactRequestSechma.statics = {
     },
 
     sendPushNotificationToAskingUser(askingUser, approvingUser) {
-        const notificationMessage = {
-            title: `You have beed approved by ${approvingUser.name}`,
-            body: approvingUser.phone_number
-        }
+
         const pushNotificationsToken = askingUser.push_notifications_token;
-        if (!pushNotificationsToken) {
-            return;
-        } else {
-            return FirebaseAdmin.sendPushNotification(notificationMessage, pushNotificationsToken);
+        if (pushNotificationsToken) {
+            const pushNotificationMessage = {
+                title: 'Pending request approved',
+                body: formatString(STATUS_CODES.STATUS_2020.message, approvingUser.name)
+            }
+            const pushNotificationData = {
+                status_code: STATUS_CODES.STATUS_2020.code
+            }
+            return FirebaseAdmin.sendPushNotification(pushNotificationMessage,
+                pushNotificationData,
+                notificationData);
         }
     },
 
@@ -199,12 +200,6 @@ ContactRequestSechma.statics = {
         }
     },
 
-    /**
-     * @param {*} askingUser 
-     * @param {*} targetPhoneNumber 
-     * @param {*} targetContactName 
-     */
-
     createContactRequest: async function (askingUser,
         targetPhoneNumber,
         targetContactName) {
@@ -212,7 +207,12 @@ ContactRequestSechma.statics = {
         const contactRequest = await this.getContactRequest(askingUser,
             targetPhoneNumber, status.PENDING)
         if (contactRequest) {
-            throw new DatabaseError('Contact request already exists');
+            throw new ItegrityError('Contact request already exists');
+        }
+
+        // check if user allow to add another contact
+        if (!askingUser.isAllowToAddAnotherContact()) {
+            throw new MaxiumEightUsersError(`user is not allowed to add more than ${appSetting.NUMOF}`);
         }
 
         // check if the target user is already part of my contacts
@@ -220,7 +220,7 @@ ContactRequestSechma.statics = {
         targetUser = await User.getUserByPhoneNumber(targetPhoneNumber)
         if (targetUser) {
             const targetContact = User.getContactOfUserById(askingUser, targetUser._id);
-            if (targetContact) {
+            if (targetContact && targetContact.status === 'approved') {
                 isAlreadyPartOfMyContacts = true;
             }
         }
@@ -239,13 +239,6 @@ ContactRequestSechma.statics = {
         }
 
     },
-
-    /**
-     * @param {*} askingUserId 
-     * @param {*} targetContactName 
-     * @param {*} targetPhoneNumber 
-     */
-
     createContactRequestInstance(
         askingUserId,
         targetContactName,

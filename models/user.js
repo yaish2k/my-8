@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { PHONE_VALIDATOR, IMAGE_VALIDATOR, EMAIL_VALIDATOR } = require('../utils/validators');
 const Schema = mongoose.Schema;
 const { castToObjectId, castToId } = require('../utils/utilities');
+const appSettings = require('../config/index').app;
 const _ = require('lodash');
 /**
  * User Schema
@@ -54,6 +55,11 @@ UserSchema.set('toJSON', {
  */
 
 UserSchema.methods = {
+
+    isAllowToAddAnotherContact() {
+        return this.approved_contacts.length + 1 <= appSettings.MAX_APPROVED_CONTACTS;
+    },
+
     addContact(contactUser, contactAliasName) {
         const UserModel = this.constructor;
         existingContact = UserModel.getContactOfUserById(this, contactUser._id);
@@ -89,7 +95,7 @@ UserSchema.statics = {
     },
 
     getContactOfUserById(user, contactId) {
-        approvedContact = user.approved_contacts.find(c =>  {
+        approvedContact = user.approved_contacts.find(c => {
             return c.user.toString() === castToId(contactId);
         });
         return approvedContact;
@@ -125,6 +131,13 @@ UserSchema.statics = {
         approvingUserAliasName) {
         await askingUser.addContact(approvingUser, approvingUserAliasName);
         await approvingUser.addContact(askingUser, askingUser.name);
+    },
+
+    getUserById(userId) {
+        const UserModel = this;
+        return UserModel
+            .findOne({ _id: userId })
+            .exec();
     },
 
     getUserByPhoneNumber(phoneNumber) {

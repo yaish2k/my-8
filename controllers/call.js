@@ -11,3 +11,10 @@ exports.callUser = asyncMiddleware(async (req, res, next) => {
     res.status(200).send(new ConversationWasCreatedSuccessfullyResponse());
 
 });
+
+exports.updateCallStatus = asyncMiddleware(async (req, res, next) => {
+    const callInstance = req.callInstance;
+    await Call.updateClassStatusToAnswered(callInstance)
+    await Call.sendPushNotification(callInstance);
+    res.statusCode(200);
+});

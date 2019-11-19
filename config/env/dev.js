@@ -26,6 +26,9 @@ module.exports = {
             privateKey: JSON.parse(`"${process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH}"`) || ''
         }
     },
+    app: {
+        MAX_APPROVED_CONTACTS: 8,
+    },
     db: process.env.MONGODB_URL,
     firebase: {
         databaseURL: process.env.FIREBASE_DATABASE_URL,

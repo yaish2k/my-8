@@ -6,6 +6,8 @@ const { formatString } = require('../utils/utilities');
 const Schema = mongoose.Schema;
 const { DatabaseError, UserIsNotAllowedToSendMessageError,
     SmsAmountExeededError, NexmoSmsServiceError } = require('../utils/errors');
+const { FirebaseAdmin } = require('../utils/firebase');
+const { STATUS_CODES } = require('../utils/status_codes');
 
 /**
  * SMS Schema
@@ -37,8 +39,44 @@ SmsSchema.statics = {
         return currentMessagesBalance;
     },
 
+    updateSmsStatusToRecieved(smsMessageIntance) {
+        smsMessageIntance.status = SMS_STATUS.RECIEVED;
+        return smsMessageIntance.save();
+    },
+
+    async sendPushNotification(smsMessageIntance) {
+        const senderId = smsMessageIntance.sender;
+        const recieverId = smsMessageIntance.reciever;
+        const senderUser = await User.getUserById(senderId);
+        const recieverUser = await User.getUserById(recieverId);
+        if (!senderUser || !recieverUser) { // use logs
+            throw new DatabaseError('Sender / Reciever users not found');
+        }
+        const pushNotificationsToken = senderUser.push_notifications_token;
+        if (pushNotificationsToken) {
+            const pushNotificationMessage = {
+                title: 'Sms received',
+                body: formatString(STATUS_CODES.STATUS_2003.message, recieverUser.name)
+            }
+            const pushNotificationData = {
+                status_code: STATUS_CODES.STATUS_2003.code
+            }
+            FirebaseAdmin.sendPushNotification(pushNotificationMessage,
+                pushNotificationData,
+                notificationData);
+        }
+
+    },
+
     userAllowsToSendAnotherMessage(currentMessagesBalance) {
         return currentMessagesBalance + 1 <= nexmoSettings.SMS.MESSAGES_MAX_BALANCE;
+    },
+
+    getSmsByMessageId(messageId) {
+        const SmsModel = this;
+        return SmsModel
+            .findOne({ nexmo_message_id: messageId })
+            .exec();
     },
 
     async sendSmsToUser(sendingUser, targetPhoneCallToSend) {
