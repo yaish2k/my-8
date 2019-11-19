@@ -13,8 +13,8 @@ exports.sendSmsToUser = asyncMiddleware(async (req, res, next) => {
 
 exports.updateSmsStatus = asyncMiddleware(async (req, res, next) => {
     const message = req.messageInstance;
-    await SMS.updateSmsStatusToRecieved(message)
+    await SMS.updateSmsStatusToRecieved(message);
     await SMS.sendPushNotification(message);
-    res.statusCode(200);
+    res.sendStatus(200);
 
 });

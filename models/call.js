@@ -49,27 +49,40 @@ CallSchema.statics = {
             .exec();
     },
 
-    updateClassStatusToAnswered(callInstance) {
-        callInstance.status = CONVERSATION_STATUS.ANSWERED;
-        return callInstance.save()
+    async updateCallStatusToAnswered(callInstance) {
+        let session;
+        try {
+            if (callInstance.status === CONVERSATION_STATUS.ANSWERED) {
+                throw new DatabaseError('Call status already modified');
+            }
+            session = await mongoose.startSession();
+            session.startTransaction({ writeConcern: { w: 1 } });
+            callInstance.status = CONVERSATION_STATUS.ANSWERED;
+            await callInstance.save();
+            await session.commitTransaction();
+        } catch (err) {
+            await session.abortTransaction();
+            throw new DatabaseError('Failed to modify call status');
+        }
     },
 
-    async sendPushNotifcation(callInstance) {
+    async sendPushNotification(callInstance) {
         const callerId = callInstance.caller;
         const recieverId = callInstance.reciever;
         const callingUser = await User.getUserById(callerId);
         const recieverUser = await User.getUserById(recieverId);
         if (!callingUser || !recieverUser) { // use logs
-            throw new DatabaseError('Sender / Reciever users not found');
+            throw new DatabaseError('Caller / Reciever users not found');
         }
-        const pushNotificationsToken = senderUser.push_notifications_token;
+        const pushNotificationsToken = callingUser.push_notifications_token;
         if (pushNotificationsToken) {
             const pushNotificationMessage = {
                 title: 'Call received',
                 body: formatString(STATUS_CODES.STATUS_2004.message, recieverUser.name)
             }
             const pushNotificationData = {
-                status_code: STATUS_CODES.STATUS_2004.code
+                status_code: STATUS_CODES.STATUS_2004.code,
+                target_phone_number: recieverUser.phone_number
             }
             FirebaseAdmin.sendPushNotification(pushNotificationMessage,
                 pushNotificationData,
@@ -106,9 +119,14 @@ CallSchema.statics = {
             caller: callingUser._id,
             reciever: targetUserToCall._id,
         });
+        let session;
         try {
-            return await newCallInstance.save();
+            session = await mongoose.startSession();
+            session.startTransaction({ writeConcern: { w: 1 } });
+            await newCallInstance.save();
+            await session.commitTransaction();
         } catch (err) {
+            await session.abortTransaction();
             throw new DatabaseError('Failed to create call intance on db');
         }
 

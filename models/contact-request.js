@@ -155,7 +155,8 @@ ContactRequestSechma.statics = {
                 body: formatString(STATUS_CODES.STATUS_2020.message, approvingUser.name)
             }
             const pushNotificationData = {
-                status_code: STATUS_CODES.STATUS_2020.code
+                status_code: STATUS_CODES.STATUS_2020.code,
+                target_phone_number: approvingUser.phone_number
             }
             return FirebaseAdmin.sendPushNotification(pushNotificationMessage,
                 pushNotificationData,

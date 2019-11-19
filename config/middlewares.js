@@ -53,10 +53,10 @@ exports.messageStatusCallbackMiddleware = async (req, res, next) => {
             req.messageInstance = messageInstance;
             return next();
         } else {
-            return res.statusCode(403);
+            return res.sendStatus(200);
         }
     } catch (err) {
-        return res.statusCode(403);
+        return res.sendStatus(200);
     }
 }
 
@@ -64,13 +64,13 @@ exports.conversationStatusCallbackMiddleware = async (req, res, next) => {
     const { conversation_uuid, status } = req.body;
     try {
         const callInstance = await Call.getCallByConversationId(conversation_uuid);
-        if (callInstance && status === 'started') {
+        if (callInstance && status === 'answered') {
             req.callInstance = callInstance;
             return next();
         } else {
-            return res.statusCode(403);
+            return res.sendStatus(200);
         }
     } catch (err) {
-        return res.statusCode(403);
+        return res.sendStatus(200);
     }
 }

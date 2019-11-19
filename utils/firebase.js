@@ -18,11 +18,16 @@ class FirebaseAdmin {
 
     static async sendPushNotification(notificationMessage, pushNotificationData,
         pushNotificationsToken) {
+        pushNotificationData = Object.keys(pushNotificationData).reduce((acc, currKey) => {
+            acc[currKey] = pushNotificationData[currKey].toString();
+            return acc;
+        }, {});
 
         let message = {
             notification: notificationMessage,
             token: pushNotificationsToken,
-            data: JSON.stringify(pushNotificationData)
+            data: pushNotificationData
+
         }
         try {
             const response = await admin.messaging().send(message);

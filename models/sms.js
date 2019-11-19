@@ -39,9 +39,21 @@ SmsSchema.statics = {
         return currentMessagesBalance;
     },
 
-    updateSmsStatusToRecieved(smsMessageIntance) {
-        smsMessageIntance.status = SMS_STATUS.RECIEVED;
-        return smsMessageIntance.save();
+    async updateSmsStatusToRecieved(smsMessageIntance) {
+        let session;
+        if (smsMessageIntance.status === SMS_STATUS.RECIEVED) {
+            throw new DatabaseError('Sms status already modified');
+        }
+        try {
+            session = await mongoose.startSession();
+            session.startTransaction({ writeConcern: { w: 1 } });
+            smsMessageIntance.status = SMS_STATUS.RECIEVED;
+            await smsMessageIntance.save();
+            await session.commitTransaction();
+        } catch (err) {
+            await session.abortTransaction();
+            throw new DatabaseError('Failed to modify sms status');
+        }
     },
 
     async sendPushNotification(smsMessageIntance) {
@@ -59,7 +71,8 @@ SmsSchema.statics = {
                 body: formatString(STATUS_CODES.STATUS_2003.message, recieverUser.name)
             }
             const pushNotificationData = {
-                status_code: STATUS_CODES.STATUS_2003.code
+                status_code: STATUS_CODES.STATUS_2003.code,
+                target_phone_number: recieverUser.phone_number
             }
             FirebaseAdmin.sendPushNotification(pushNotificationMessage,
                 pushNotificationData,
@@ -110,13 +123,16 @@ SmsSchema.statics = {
             sender: sendingUser._id,
             reciever: targetUserToSend._id,
         });
+        let session;
         try {
-            return await smsInstance.save();
+            session = await mongoose.startSession();
+            session.startTransaction({ writeConcern: { w: 1 } });
+            await smsInstance.save();
+            await session.commitTransaction();
         } catch (err) {
+            await session.abortTransaction();
             throw new DatabaseError('Failed to create sms intance on db');
         }
-
-
     }
 };
 

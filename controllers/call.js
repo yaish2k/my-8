@@ -14,7 +14,7 @@ exports.callUser = asyncMiddleware(async (req, res, next) => {
 
 exports.updateCallStatus = asyncMiddleware(async (req, res, next) => {
     const callInstance = req.callInstance;
-    await Call.updateClassStatusToAnswered(callInstance)
+    await Call.updateCallStatusToAnswered(callInstance);
     await Call.sendPushNotification(callInstance);
-    res.statusCode(200);
+    res.sendStatus(200);
 });
