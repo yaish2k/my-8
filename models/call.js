@@ -73,7 +73,7 @@ CallSchema.statics = {
             }
             FirebaseAdmin.sendPushNotification(pushNotificationMessage,
                 pushNotificationData,
-                notificationData);
+                pushNotificationsToken);
         }
     },
 

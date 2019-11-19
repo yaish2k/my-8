@@ -159,7 +159,7 @@ ContactRequestSechma.statics = {
             }
             return FirebaseAdmin.sendPushNotification(pushNotificationMessage,
                 pushNotificationData,
-                notificationData);
+                pushNotificationsToken);
         }
     },
 

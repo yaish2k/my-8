@@ -16,13 +16,13 @@ class FirebaseAdmin {
         return admin.auth().getUser(userId);
     }
 
-    static async sendPushNotification(notificationMessage, notificationData,
+    static async sendPushNotification(notificationMessage, pushNotificationData,
         pushNotificationsToken) {
 
         let message = {
             notification: notificationMessage,
             token: pushNotificationsToken,
-            data: notificationData
+            data: pushNotificationData
         }
         try {
             const response = await admin.messaging().send(message);
