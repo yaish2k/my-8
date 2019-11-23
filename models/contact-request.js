@@ -40,19 +40,11 @@ const ContactRequestSechma = new Schema({
  */
 
 ContactRequestSechma.methods = {
-    /**
-     * all the contacts that the user requested (can be only from ContactRequest type) 
-     * @param {*} newStatus 
-     * @returns Promise<ContactRequest>
-     */
     changeStatus(newStatus) {
         this.status = newStatus;
         return this.save();
     }
 }
-/**
- * Statics
- */
 
 ContactRequestSechma.statics = {
 
@@ -135,11 +127,11 @@ ContactRequestSechma.statics = {
         const approvingUserAliasName = contactRequest.target_contact_name;
         this.removeContactRequest(contactRequest);
         await this.createMatchBetweenUsers(askingUser, approvingUser, approvingUserAliasName);
-        return this.sendPushNotificationToAskingUser(askingUser, approvingUser);
+        return this.sendApprovedUserNotification(askingUser, approvingUser);
 
     },
 
-    sendPushNotificationToAskingUser(askingUser, approvingUser) {
+    sendApprovedUserNotification(askingUser, approvingUser) {
 
         const pushNotificationsToken = askingUser.push_notifications_token;
         if (pushNotificationsToken) {
@@ -155,6 +147,21 @@ ContactRequestSechma.statics = {
                 pushNotificationData,
                 pushNotificationsToken);
         }
+    },
+
+    sendRequestUserNotification(askingUser, targetUser) {
+        const pushNotificationsToken = targetUser.push_notifications_token;
+        const pushNotificationMessage = {
+            title: 'Pending request created',
+            body: formatString(STATUS_CODES.STATUS_2021.message, askingUser.name)
+        }
+        const pushNotificationData = {
+            status_code: STATUS_CODES.STATUS_2021.code,
+            asking_phone_number: askingUser.phone_number
+        }
+        return FirebaseAdmin.sendPushNotification(pushNotificationMessage,
+            pushNotificationData,
+            pushNotificationsToken);
     },
 
     createMatchBetweenUsers(
@@ -199,11 +206,15 @@ ContactRequestSechma.statics = {
             throw new ItegrityError('Target user is already part of the requesting user approved contacts');
         }
         try {
-            return this.createContactRequestInstance(
+            this.createContactRequestInstance(
                 askingUser._id,
                 targetContactName,
                 targetPhoneNumber
             );
+            
+            if (targetUser && targetUser.push_notifications_token) {
+                this.sendRequestUserNotification(askingUser, targetUser)
+            }
         } catch (err) {
             throw new DatabaseError('Failed to create contact request');
         }

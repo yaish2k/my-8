@@ -113,11 +113,21 @@ CallSchema.statics = {
         } catch (err) {
             throw new NexmoPhoneCallsServiceError('Error while trying to call from nexmo');
         }
+
+        await this.createCallInstance(conversationId, textToSpeachMessage,
+            callingUser._id, targetUserToCall._id);
+        const remainingCallsBalance = nexmoSettings.CALL.CALLS_MAX_BALANCE - currentCallsBalance - 1;
+        return remainingCallsBalance;
+    },
+
+    async createCallInstance(conversationId, textToSpeachMessage,
+        callingUserId, reciverId) {
+        const CallModel = this;
         let newCallInstance = new CallModel({
             nexmo_conversation_id: conversationId,
             text_to_speach: textToSpeachMessage,
-            caller: callingUser._id,
-            reciever: targetUserToCall._id,
+            caller: callingUserId,
+            reciever: reciverId,
         });
         let session;
         try {
@@ -129,7 +139,6 @@ CallSchema.statics = {
             await session.abortTransaction();
             throw new DatabaseError('Failed to create call intance on db');
         }
-
 
     }
 

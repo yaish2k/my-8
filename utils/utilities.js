@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const settings = require('../config/index');
+
 
 const castToObjectId = (id) => {
     if (typeof id === 'string') {
@@ -15,6 +17,14 @@ const castToId = (objectId) => {
         return objectId.toString();
     }
     return objectId;
+}
+
+const getAppSettings = () => {
+    return {
+        maxAllowedSms: settings.nexmo.SMS.MESSAGES_MAX_BALANCE,
+        maxAllowedCalls: settings.nexmo.CALL.CALLS_MAX_BALANCE,
+        serverPhoneNumber: settings.nexmo.SERVER_PHONE_NUMBER,
+    }
 }
 
 const formatString = (str, ...formatingArgs) => {
@@ -41,5 +51,6 @@ module.exports = {
     promisify,
     castToId,
     formatString,
-    phoneNumberDigitsOnly
+    phoneNumberDigitsOnly,
+    getAppSettings
 }

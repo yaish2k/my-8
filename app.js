@@ -25,11 +25,13 @@ const usersRoutes = require('./routes/user');
 const contactRequestRoutes = require('./routes/contact-request');
 const smsRoutes = require('./routes/sms');
 const callRoutes = require('./routes/call');
+const settingsRoute = require('./routes/settings');
 
 app.use('/users', usersRoutes);
 app.use('/contact-requests', contactRequestRoutes);
 app.use('/messages', smsRoutes);
 app.use('/calls', callRoutes);
+app.use('/settings', settingsRoute);
 
 module.exports = {
     app

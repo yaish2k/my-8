@@ -4,7 +4,7 @@ const { tokenVerificationMiddleware, authenticationMiddleware } = require('../co
 const router = express.Router();
 
 router.post('/create-contact-request', tokenVerificationMiddleware, authenticationMiddleware,
-    contactRequestController.createContactRequest); // checked;
+    contactRequestController.createContactRequest);
 
 router.post('/approve-contact-request', tokenVerificationMiddleware, authenticationMiddleware,
     contactRequestController.approveContactRequest);

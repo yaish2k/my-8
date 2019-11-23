@@ -1,4 +1,4 @@
-const config = require('./index');
+const nexmoSettings = require('./index').nexmo;
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const SMS = mongoose.model('SMS')
@@ -49,14 +49,14 @@ exports.messageStatusCallbackMiddleware = async (req, res, next) => {
     const { messageId, status } = req.body
     try {
         const messageInstance = await SMS.getSmsByMessageId(messageId);
-        if (messageInstance && status === 'accepted') {
+        if (messageInstance && status === nexmoSettings.SMS.MESSAGE_ACCEPTED) {
             req.messageInstance = messageInstance;
             return next();
         } else {
-            return res.sendStatus(200);
+            return res.status(200).send('not authorized');
         }
     } catch (err) {
-        return res.sendStatus(200);
+        return res.status(200).send('not authorized');
     }
 }
 
@@ -64,13 +64,13 @@ exports.conversationStatusCallbackMiddleware = async (req, res, next) => {
     const { conversation_uuid, status } = req.body;
     try {
         const callInstance = await Call.getCallByConversationId(conversation_uuid);
-        if (callInstance && status === 'answered') {
+        if (callInstance && status === nexmoSettings.CALL.CALL_ANSWERED) {
             req.callInstance = callInstance;
             return next();
         } else {
-            return res.sendStatus(200);
+            return res.status(200).send('not authorized');
         }
     } catch (err) {
-        return res.sendStatus(200);
+        return res.status(200).send('not authorized');
     }
 }

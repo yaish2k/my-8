@@ -93,7 +93,6 @@ SmsSchema.statics = {
     },
 
     async sendSmsToUser(sendingUser, targetPhoneCallToSend) {
-        const SmsModel = this;
         let targetUserToSend;
         targetUserToSend = await User.getUserByPhoneNumber(targetPhoneCallToSend);
         if (!targetUserToSend) {
@@ -108,20 +107,29 @@ SmsSchema.statics = {
         if (!this.userAllowsToSendAnotherMessage(currentMessagesBalance)) {
             throw new SmsAmountExeededError('Not enough sms balance remaining');
         }
-        let smsMessage = formatString(nexmoSettings.SMS.SERVER_MESSAGE, sendingUser.name);
+        let messageText = formatString(nexmoSettings.SMS.SERVER_MESSAGE, sendingUser.name);
         let messageId;
         try {
             messageId = await NexmoHandler.sendSmsMessage(sendingUser.name,
                 targetUserToSend.phone_number,
-                smsMessage);
+                messageText);
         } catch (err) {
             throw new NexmoSmsServiceError('Error while trying to send sms from nexmo');
         }
+
+        await this.createSmsInstance(messageId, messageText, sendingUser._id, targetUserToSend._id);
+        const remainingMessagesAmount = nexmoSettings.SMS.MESSAGES_MAX_BALANCE - currentMessagesBalance - 1;
+        return remainingMessagesAmount;
+    },
+
+
+    async createSmsInstance(messageId, messageText, senderId, recieverId) {
+        const SmsModel = this;
         let smsInstance = new SmsModel({
             nexmo_message_id: messageId,
-            sms_text: smsMessage,
-            sender: sendingUser._id,
-            reciever: targetUserToSend._id,
+            sms_text: messageText,
+            sender: senderId,
+            reciever: recieverId,
         });
         let session;
         try {

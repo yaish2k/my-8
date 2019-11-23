@@ -8,26 +8,28 @@ module.exports = {
     nexmo: {
         SERVER_PHONE_NUMBER: process.env.SERVER_PHONE_NUMBER,
         SMS: {
-            MESSAGES_MAX_BALANCE: 6,
+            MESSAGES_MAX_BALANCE: process.env.MESSAGES_MAX_BALANCE || 6,
             SUCESS_MESSAGE_ID: "0",
-            SERVER_MESSAGE: '{0} is looking for you urgently'
+            MESSAGE_ACCEPTED: 'accepted',
+            SERVER_MESSAGE: process.env.SMS_SERVER_MESSAGE || '{0} is looking for you urgently'
         },
         CALL: {
-            CALLS_MAX_BALANCE: 6,
-            SERVER_MESSAGE: '{0} is looking for you urgently',
-            ACTION: 'talk',
-            VOICE_NAME: 'Kendra',
-            TYPE: 'phone'
+            CALLS_MAX_BALANCE: process.env.CALLS_MAX_BALANCE || 6,
+            SERVER_MESSAGE: process.env.CALL_SERVER_MESSAGE || '{0} is looking for you urgently',
+            CALL_ANSWERED: 'answered',
+            ACTION: process.env.CALL_ACTION || 'talk',
+            VOICE_NAME: process.env.CALL_VOICE_NAME || 'Kendra',
+            TYPE: process.env.CALL_TYPE || 'phone'
         },
         credentials: {
-            apiKey: process.env.NEXMO_API_KEY || '',
-            apiSecret: process.env.NEXMO_API_SECRET || '',
-            applicationId: process.env.NEXMO_APPLICATION_ID || '',
-            privateKey: JSON.parse(`"${process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH}"`) || ''
+            apiKey: process.env.NEXMO_API_KEY,
+            apiSecret: process.env.NEXMO_API_SECRET,
+            applicationId: process.env.NEXMO_APPLICATION_ID,
+            privateKey: JSON.parse(`"${process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH}"`)
         }
     },
     app: {
-        MAX_APPROVED_CONTACTS: 8,
+        MAX_APPROVED_CONTACTS: process.env.MAX_APPROVED_CONTACTS || 8,
     },
     db: process.env.MONGODB_URL,
     firebase: {

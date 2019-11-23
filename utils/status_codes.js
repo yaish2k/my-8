@@ -36,12 +36,12 @@ STATUS_CODES = {
 
     STATUS_2001: {
         code: 2001,
-        message: 'sms / phone call was sent waiting for push notification status'
+        message: 'sms was sent waiting for push notification status'
     },
 
     STATUS_2002: {
         code: 2002,
-        message: 'sms / phone call was sent no push update will follow'
+        message: 'phone call was sent waiting for push notification status'
     },
     STATUS_2003: {
         code: 2003,
@@ -53,8 +53,12 @@ STATUS_CODES = {
     },
     STATUS_2020: {
         code: 2020,
-        message: '{0} approved your pending request' // send by push notification to the sender somehow
+        message: '{0} approved your request' // send by push notification to the sender somehow
     },
+    STATUS_2021: {
+        code: 2021,
+        message: '{0} sent you a request' // send by push notification to the sender somehow
+    }
 
 }
 module.exports = {
