@@ -118,8 +118,9 @@ SmsSchema.statics = {
         }
 
         await this.createSmsInstance(messageId, messageText, sendingUser._id, targetUserToSend._id);
-        const remainingMessagesAmount = nexmoSettings.SMS.MESSAGES_MAX_BALANCE - currentMessagesBalance - 1;
-        return remainingMessagesAmount;
+        const sentMessagesAmmount = currentMessagesBalance + 1;
+        const remainingMessagesAmount = nexmoSettings.SMS.MESSAGES_MAX_BALANCE - sentMessagesAmmount;
+        return { remainingMessagesAmount, sentMessagesAmmount };
     },
 
 
@@ -130,6 +131,7 @@ SmsSchema.statics = {
             sms_text: messageText,
             sender: senderId,
             reciever: recieverId,
+            status: SMS_STATUS.RECIEVED
         });
         let session;
         try {

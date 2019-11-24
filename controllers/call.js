@@ -6,9 +6,10 @@ const { ConversationWasCreatedSuccessfullyResponse } = require('../utils/respons
 exports.callUser = asyncMiddleware(async (req, res, next) => {
     const callingUser = req.user;
     const { targetPhoneNumberToCall } = req.body;
-    const remainingCallsBalance = await Call.callUser(callingUser,
+    const { remainingCallsBalance, answeredCallsBalance } = await Call.callUser(callingUser,
         targetPhoneNumberToCall);
-    res.status(200).send(new ConversationWasCreatedSuccessfullyResponse(remainingCallsBalance));
+    res.status(200).send(new ConversationWasCreatedSuccessfullyResponse(remainingCallsBalance,
+        answeredCallsBalance));
 
 });
 

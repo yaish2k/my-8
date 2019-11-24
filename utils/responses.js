@@ -54,14 +54,14 @@ class ContactRequestRemovedResponse extends BaseResponse {
 }
 
 class SmsWasSentSuccessfullyResponse extends BaseResponse {
-    constructor(remainingMessagesAmount) {
-        super({ message: 'Sms was sent successfully', remainingMessagesAmount }, STATUS_CODES.STATUS_2001.code);
+    constructor(remainingMessagesAmount, sentMessagesAmmount) {
+        super({ message: 'Sms was sent successfully', remainingMessagesAmount, sentMessagesAmmount }, STATUS_CODES.STATUS_2001.code);
     }
 }
 
 class ConversationWasCreatedSuccessfullyResponse extends BaseResponse {
-    constructor(remainingCallsAmount) {
-        super({ message: 'Conversation was created successfully', remainingCallsAmount }, STATUS_CODES.STATUS_2002.code);
+    constructor(remainingCallsAmount, answeredCallsAmount) {
+        super({ message: 'Conversation was created successfully', remainingCallsAmount, answeredCallsAmount }, STATUS_CODES.STATUS_2002.code);
     }
 }
 

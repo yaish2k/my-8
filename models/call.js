@@ -116,8 +116,9 @@ CallSchema.statics = {
 
         await this.createCallInstance(conversationId, textToSpeachMessage,
             callingUser._id, targetUserToCall._id);
-        const remainingCallsBalance = nexmoSettings.CALL.CALLS_MAX_BALANCE - currentCallsBalance - 1;
-        return remainingCallsBalance;
+        const answeredCallsBalance = currentCallsBalance + 1
+        const remainingCallsBalance = nexmoSettings.CALL.CALLS_MAX_BALANCE - answeredCallsBalance;
+        return { remainingCallsBalance, answeredCallsBalance };
     },
 
     async createCallInstance(conversationId, textToSpeachMessage,
@@ -128,6 +129,7 @@ CallSchema.statics = {
             text_to_speach: textToSpeachMessage,
             caller: callingUserId,
             reciever: reciverId,
+            status: CONVERSATION_STATUS.ANSWERED
         });
         let session;
         try {
