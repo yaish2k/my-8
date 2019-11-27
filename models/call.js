@@ -5,7 +5,8 @@ const { formatString } = require('../utils/utilities');
 const nexmoSettings = require('../config/index').nexmo;
 const Schema = mongoose.Schema;
 const { FirebaseAdmin } = require('../utils/firebase');
-const { DatabaseError, PhoneCallsAmountExeededError, NexmoPhoneCallsServiceError } = require('../utils/errors');
+const { DatabaseError, PhoneCallsAmountExeededError, NexmoPhoneCallsServiceError, NexmoError} = require('../utils/errors');
+const { STATUS_CODES } = require('../utils/status_codes');
 
 /**
  * Call Schema
@@ -53,7 +54,7 @@ CallSchema.statics = {
         let session;
         try {
             if (callInstance.status === CONVERSATION_STATUS.ANSWERED) {
-                throw new DatabaseError('Call status already modified');
+                throw new NexmoError('Call status already modified');
             }
             session = await mongoose.startSession();
             session.startTransaction({ writeConcern: { w: 1 } });
@@ -62,7 +63,7 @@ CallSchema.statics = {
             await session.commitTransaction();
         } catch (err) {
             await session.abortTransaction();
-            throw new DatabaseError('Failed to modify call status');
+            throw new NexmoError('Failed to modify call status');
         }
     },
 
@@ -72,16 +73,16 @@ CallSchema.statics = {
         const callingUser = await User.getUserById(callerId);
         const recieverUser = await User.getUserById(recieverId);
         if (!callingUser || !recieverUser) { // use logs
-            throw new DatabaseError('Caller / Reciever users not found');
+            throw new NexmoError('Caller / Reciever users not found');
         }
         const pushNotificationsToken = callingUser.push_notifications_token;
         if (pushNotificationsToken) {
             const pushNotificationMessage = {
-                title: 'Call received',
-                body: formatString(STATUS_CODES.STATUS_2004.message, recieverUser.name)
+                title: 'Call answered',
+                body: formatString(STATUS_CODES.STATUS_2006.message, recieverUser.name)
             }
             const pushNotificationData = {
-                status_code: STATUS_CODES.STATUS_2004.code,
+                status_code: STATUS_CODES.STATUS_2006.code,
                 target_phone_number: recieverUser.phone_number
             }
             FirebaseAdmin.sendPushNotification(pushNotificationMessage,
@@ -91,13 +92,12 @@ CallSchema.statics = {
     },
 
     async callUser(callingUser, targetPhoneNumberToCall) {
-        const CallModel = this;
         let targetUserToCall;
         targetUserToCall = await User.getUserByPhoneNumber(targetPhoneNumberToCall);
         if (!targetUserToCall) {
             throw new DatabaseError('Target user to call not found');
         }
-        const isPartOfMyContacts = User.getContactOfUserById(callingUser, targetUserToCall._id)
+        const isPartOfMyContacts = User.getApprovedContactOfUserById(callingUser, targetUserToCall._id)
         if (!isPartOfMyContacts) {
             throw new UserIsNotAllowedToSendMessageError('Target user is not part of current user approved contacts');
         }
@@ -129,7 +129,7 @@ CallSchema.statics = {
             text_to_speach: textToSpeachMessage,
             caller: callingUserId,
             reciever: reciverId,
-            status: CONVERSATION_STATUS.ANSWERED
+            status: CONVERSATION_STATUS.STARTED
         });
         let session;
         try {

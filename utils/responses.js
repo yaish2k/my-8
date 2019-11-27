@@ -61,7 +61,7 @@ class SmsWasSentSuccessfullyResponse extends BaseResponse {
 
 class ConversationWasCreatedSuccessfullyResponse extends BaseResponse {
     constructor(remainingCallsAmount, answeredCallsAmount) {
-        super({ message: 'Conversation was created successfully', remainingCallsAmount, answeredCallsAmount }, STATUS_CODES.STATUS_2002.code);
+        super({ message: 'Phone call was sent waiting for push notification status', remainingCallsAmount, answeredCallsAmount }, STATUS_CODES.STATUS_2004.code);
     }
 }
 

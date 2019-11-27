@@ -53,10 +53,10 @@ exports.messageStatusCallbackMiddleware = async (req, res, next) => {
             req.messageInstance = messageInstance;
             return next();
         } else {
-            return res.status(200).send('not authorized');
+            return res.sendStatus(200);
         }
     } catch (err) {
-        return res.status(200).send('not authorized');
+        return res.sendStatus(200);
     }
 }
 
@@ -68,9 +68,9 @@ exports.conversationStatusCallbackMiddleware = async (req, res, next) => {
             req.callInstance = callInstance;
             return next();
         } else {
-            return res.status(200).send('not authorized');
+            return res.sendStatus(200);
         }
     } catch (err) {
-        return res.status(200).send('not authorized');
+        return res.sendStatus(200);
     }
 }

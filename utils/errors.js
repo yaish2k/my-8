@@ -10,6 +10,9 @@ class BaseError extends Error {
     }
 
 }
+
+class NexmoError extends Error {}
+
 class UserIsNotAllowedToSendMessageError extends BaseError {
     constructor(message) {
         super(message, STATUS_CODES.STATUS_1001, 'UserIsNotAllowedToSendMessageError');
@@ -61,6 +64,7 @@ class DatabaseError extends BaseError {
 
 module.exports = {
     BaseError,
+    NexmoError,
     DatabaseError,
     ItegrityError,
     MaxiumEightUsersError,

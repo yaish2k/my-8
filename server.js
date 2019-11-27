@@ -6,20 +6,24 @@ const { BaseError } = require('./utils/errors');
 
 
 app.use(function errorHandlingMiddleware(err, req, res, next) {
-    const errorObject = handleError(err);
-    res.status(418).json(errorObject);
+    const { isError, messageObject } = handleError(err);
+    const status = isError ? 418 : 200
+    res.status(status).json(messageObject);
 });
 
 function handleError(err) {
+    if (err instanceof NexmoError) {
+        return { isError: false, messageObject: { message: 'OK' } };
+    }
     if (err instanceof BaseError) {
-        let messageObject = JSON.parse(err.message);
+        let messageData = JSON.parse(err.message);
         return {
-            message: messageObject.message,
-            code: messageObject.code,
-            errorName: err.errorName
+            isError: true, messageObject: {
+                message: messageData.message, code: messageData.code, errorName: err.errorName
+            }
         };
     }
-    return { message: err.message };
+    return { isError: true, messageObject: { message: err.message } };
 }
 
 function listen() {

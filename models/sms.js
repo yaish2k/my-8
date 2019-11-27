@@ -5,7 +5,7 @@ const nexmoSettings = require('../config/index').nexmo;
 const { formatString } = require('../utils/utilities');
 const Schema = mongoose.Schema;
 const { DatabaseError, UserIsNotAllowedToSendMessageError,
-    SmsAmountExeededError, NexmoSmsServiceError } = require('../utils/errors');
+    SmsAmountExeededError, NexmoSmsServiceError, NexmoError} = require('../utils/errors');
 const { FirebaseAdmin } = require('../utils/firebase');
 const { STATUS_CODES } = require('../utils/status_codes');
 
@@ -42,7 +42,7 @@ SmsSchema.statics = {
     async updateSmsStatusToRecieved(smsMessageIntance) {
         let session;
         if (smsMessageIntance.status === SMS_STATUS.RECIEVED) {
-            throw new DatabaseError('Sms status already modified');
+            throw new NexmoError('Sms status already modified');
         }
         try {
             session = await mongoose.startSession();
@@ -52,7 +52,7 @@ SmsSchema.statics = {
             await session.commitTransaction();
         } catch (err) {
             await session.abortTransaction();
-            throw new DatabaseError('Failed to modify sms status');
+            throw new NexmoError('Failed to modify sms status');
         }
     },
 
@@ -62,7 +62,7 @@ SmsSchema.statics = {
         const senderUser = await User.getUserById(senderId);
         const recieverUser = await User.getUserById(recieverId);
         if (!senderUser || !recieverUser) { // use logs
-            throw new DatabaseError('Sender / Reciever users not found');
+            throw new NexmoError('Sender / Reciever users not found');
         }
         const pushNotificationsToken = senderUser.push_notifications_token;
         if (pushNotificationsToken) {
@@ -98,7 +98,7 @@ SmsSchema.statics = {
         if (!targetUserToSend) {
             throw new DatabaseError('Target user to send not found');
         }
-        const isPartOfMyContacts = User.getContactOfUserById(sendingUser, targetUserToSend._id)
+        const isPartOfMyContacts = User.getApprovedContactOfUserById(sendingUser, targetUserToSend._id)
         if (!isPartOfMyContacts) {
             throw new UserIsNotAllowedToSendMessageError('Target user is not part of current user approved contacts');
         }
@@ -118,9 +118,9 @@ SmsSchema.statics = {
         }
 
         await this.createSmsInstance(messageId, messageText, sendingUser._id, targetUserToSend._id);
-        const sentMessagesAmmount = currentMessagesBalance + 1;
-        const remainingMessagesAmount = nexmoSettings.SMS.MESSAGES_MAX_BALANCE - sentMessagesAmmount;
-        return { remainingMessagesAmount, sentMessagesAmmount };
+        const sentMessagesAmount = currentMessagesBalance + 1;
+        const remainingMessagesAmount = nexmoSettings.SMS.MESSAGES_MAX_BALANCE - sentMessagesAmount;
+        return { remainingMessagesAmount, sentMessagesAmount };
     },
 
 
@@ -131,7 +131,7 @@ SmsSchema.statics = {
             sms_text: messageText,
             sender: senderId,
             reciever: recieverId,
-            status: SMS_STATUS.RECIEVED
+            status: SMS_STATUS.SENT
         });
         let session;
         try {

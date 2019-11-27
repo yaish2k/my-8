@@ -95,10 +95,18 @@ UserSchema.statics = {
     },
 
     getContactOfUserById(user, contactId) {
-        approvedContact = user.approved_contacts.find(c => {
+        const contact = user.approved_contacts.find(c => {
             return c.user.toString() === castToId(contactId);
         });
+        return contact;
+    },
+
+    getApprovedContactOfUserById(user, contactId) {
+        const approvedContact = user.approved_contacts.find(c => {
+            return c.user.toString() === castToId(contactId) && c.status === status.APPROVED
+        });
         return approvedContact;
+        
     },
 
     removeContactFromArray(user, contactId) {

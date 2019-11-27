@@ -38,17 +38,16 @@ STATUS_CODES = {
         code: 2001,
         message: 'sms was sent waiting for push notification status'
     },
-
-    STATUS_2002: {
-        code: 2002,
-        message: 'phone call was sent waiting for push notification status'
-    },
     STATUS_2003: {
         code: 2003,
         message: 'Sms was recieved to {0}' // send by push notification to the sender somehow
     },
     STATUS_2004: {
         code: 2004,
+        message: 'phone call was sent waiting for push notification status'
+    },
+    STATUS_2006: {
+        code: 2006,
         message: 'phone call was answered by {0}' // send by push notification to the sender somehow
     },
     STATUS_2020: {

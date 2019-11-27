@@ -2,6 +2,19 @@ const mongoose = require('mongoose');
 const settings = require('../config/index');
 
 
+const handleTransaction = async (transactionFunc) => {
+    let session;
+    try {
+        session = await mongoose.startSession();
+        session.startTransaction({ writeConcern: { w: 1 } });
+        await transactionFunc();
+        await session.commitTransaction();
+    } catch (err) {
+        await session.abortTransaction();
+        throw new DatabaseError('Failed to create call intance on db');
+    }
+}
+
 const castToObjectId = (id) => {
     if (typeof id === 'string') {
         return mongoose.Types.ObjectId(id);
@@ -52,5 +65,6 @@ module.exports = {
     castToId,
     formatString,
     phoneNumberDigitsOnly,
-    getAppSettings
+    getAppSettings,
+    handleTransaction
 }
