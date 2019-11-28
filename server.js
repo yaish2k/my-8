@@ -2,7 +2,7 @@ const port = parseInt(process.env.PORT) || 3000;
 const { app } = require('./app');
 const mongoose = require('mongoose');
 const config = require('./config/index');
-const { BaseError } = require('./utils/errors');
+const { BaseError, NexmoError } = require('./utils/errors');
 
 
 app.use(function errorHandlingMiddleware(err, req, res, next) {

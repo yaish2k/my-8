@@ -35,7 +35,7 @@ SmsSchema.statics = {
         const SmsModel = this;
         let currentMessagesBalance;
         currentMessagesBalance = await SmsModel
-            .countDocuments({ sender: user._id, status: SMS_STATUS.RECIEVED });
+            .countDocuments({ sender: user._id});
         return currentMessagesBalance;
     },
 

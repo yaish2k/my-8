@@ -35,7 +35,7 @@ CallSchema.statics = {
         const CallModel = this;
         let currentCallsBalance;
         currentCallsBalance = await CallModel
-            .countDocuments({ caller: user._id, status: CONVERSATION_STATUS.ANSWERED });
+            .countDocuments({ caller: user._id});
         return currentCallsBalance;
     },
 

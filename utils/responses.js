@@ -54,8 +54,8 @@ class ContactRequestRemovedResponse extends BaseResponse {
 }
 
 class SmsWasSentSuccessfullyResponse extends BaseResponse {
-    constructor(remainingMessagesAmount, sentMessagesAmmount) {
-        super({ message: 'Sms was sent successfully', remainingMessagesAmount, sentMessagesAmmount }, STATUS_CODES.STATUS_2001.code);
+    constructor(remainingMessagesAmount, sentMessagesAmount) {
+        super({ message: 'Sms was sent successfully', remainingMessagesAmount, sentMessagesAmount }, STATUS_CODES.STATUS_2001.code);
     }
 }
 
