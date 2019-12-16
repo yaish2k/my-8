@@ -15,10 +15,10 @@ module.exports = {
         },
         CALL: {
             CALLS_MAX_BALANCE: process.env.CALLS_MAX_BALANCE || 6,
-            SERVER_MESSAGE: process.env.CALL_SERVER_MESSAGE || '{0} is looking for you urgently',
+            SERVER_MESSAGE: process.env.CALL_SERVER_MESSAGE || "<speak>hello <break time='0.5s' /> {0} is looking for you. please call {0}.</speak>",
             CALL_ANSWERED: 'answered',
             ACTION: process.env.CALL_ACTION || 'talk',
-            VOICE_NAME: process.env.CALL_VOICE_NAME || 'Kendra',
+            VOICE_NAME: process.env.CALL_VOICE_NAME || 'amy',
             TYPE: process.env.CALL_TYPE || 'phone'
         },
         credentials: {

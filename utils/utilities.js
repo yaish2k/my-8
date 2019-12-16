@@ -43,7 +43,7 @@ const getAppSettings = () => {
 const formatString = (str, ...formatingArgs) => {
     let formattedString = str;
     for (index in formatingArgs) {
-        formattedString = formattedString.replace("{" + index + "}", formatingArgs[index]);
+        formattedString = formattedString.split("{" + index + "}").join(formatingArgs[index]);
     }
     return formattedString;
 }
