@@ -1,7 +1,11 @@
 .DS_Store
 .env
+<<<<<<< Updated upstream
 .vscode
 .DS_Store
+=======
+.vscode/
+>>>>>>> Stashed changes
 node_modules/
 config/vars
 test.js

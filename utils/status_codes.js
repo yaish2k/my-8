@@ -1,4 +1,3 @@
-
 STATUS_CODES = {
     STATUS_1001: {
         code: 1001,

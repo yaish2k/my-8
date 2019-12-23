@@ -8,15 +8,21 @@ module.exports = {
     nexmo: {
         SERVER_PHONE_NUMBER: process.env.SERVER_PHONE_NUMBER,
         SMS: {
-            MESSAGES_MAX_BALANCE: process.env.MESSAGES_MAX_BALANCE || 6,
+            MESSAGES_MAX_BALANCE: process.env.MESSAGES_MAX_BALANCE || 30,
             SUCESS_MESSAGE_ID: "0",
-            MESSAGE_ACCEPTED: 'answered',
+            MESSAGE_ACCEPTED: 'accepted',
             SERVER_MESSAGE: process.env.SMS_SERVER_MESSAGE || '{0} is looking for you urgently'
         },
         CALL: {
+<<<<<<< Updated upstream
             CALLS_MAX_BALANCE: process.env.CALLS_MAX_BALANCE || 6,
             SERVER_MESSAGE: process.env.CALL_SERVER_MESSAGE || "<speak>hello <break time='0.5s' /> {0} is looking for you. please call {0}.</speak>",
             CALL_ACCEPETED: 'accepted',
+=======
+            CALLS_MAX_BALANCE: process.env.CALLS_MAX_BALANCE || 40,
+            SERVER_MESSAGE: process.env.CALL_SERVER_MESSAGE || '{0} is looking for you urgently',
+            CALL_ANSWERED: 'answered',
+>>>>>>> Stashed changes
             ACTION: process.env.CALL_ACTION || 'talk',
             VOICE_NAME: process.env.CALL_VOICE_NAME || 'Amy',
             TYPE: process.env.CALL_TYPE || 'phone'

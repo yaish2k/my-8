@@ -40,3 +40,7 @@ function connect() {
 }
 // bootstrap app
 connect();
+
+module.exports = {
+    app
+}
