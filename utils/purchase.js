@@ -11,13 +11,14 @@ class PurchaseHandler {
     }
 
     static async validate(receipt) {
-        try  {
+        try {
             const response = await promisify(inAppPurchase.validate.bind(inAppPurchase), receipt);
             return inAppPurchase.isValidated(response);
         } catch (err) {
             throw new Error('Receipt is not valid')
         }
-
-        
     }
+}
+module.exports = {
+    PurchaseHandler
 }
