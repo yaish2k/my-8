@@ -109,7 +109,6 @@ ContactRequestSechma.statics = {
 
     async approveContactRequest(approvingUser,
         askingPhoneNumber) {
-        const ContactRequestModel = this;
         let askingUser;
         askingUser = await User.getUserByPhoneNumber(askingPhoneNumber);
         if (!askingUser) {
@@ -191,9 +190,6 @@ ContactRequestSechma.statics = {
         if (contactRequest) {
             throw new ItegrityError('Contact request already exists');
         }
-        if (!askingUser.isAllowToAddAnotherContact()) {
-            throw new MaxiumEightUsersError(`user is not allowed to add more than ${appSettings.MAX_APPROVED_CONTACTS}`);
-        }
         let isAlreadyPartOfMyContacts = false;
         targetUser = await User.getUserByPhoneNumber(targetPhoneNumber)
         if (targetUser) {
@@ -211,7 +207,7 @@ ContactRequestSechma.statics = {
                 targetContactName,
                 targetPhoneNumber
             );
-            
+
             if (targetUser && targetUser.push_notifications_token) {
                 this.sendRequestUserNotification(askingUser, targetUser)
             }

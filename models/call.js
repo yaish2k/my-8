@@ -5,7 +5,7 @@ const { formatString } = require('../utils/utilities');
 const nexmoSettings = require('../config/index').nexmo;
 const Schema = mongoose.Schema;
 const { FirebaseAdmin } = require('../utils/firebase');
-const { DatabaseError, PhoneCallsAmountExeededError, NexmoPhoneCallsServiceError, NexmoError} = require('../utils/errors');
+const { DatabaseError, PhoneCallsAmountExeededError, NexmoPhoneCallsServiceError, NexmoError } = require('../utils/errors');
 const { STATUS_CODES } = require('../utils/status_codes');
 
 /**
@@ -22,7 +22,9 @@ const CallSchema = new Schema({
     text_to_speach: { type: String, required: true },
     caller: { type: Schema.Types.ObjectId, ref: 'User' },
     reciever: { type: Schema.Types.ObjectId, ref: 'User' },
-    status: { type: String, require: true, default: CONVERSATION_STATUS.STARTED }
+    status: { type: String, require: true, default: CONVERSATION_STATUS.STARTED },
+    is_collected: { type: Boolean, default: false }
+
 });
 
 /**
@@ -31,16 +33,35 @@ const CallSchema = new Schema({
 
 CallSchema.statics = {
 
+    async getCallsList(user) {
+        CallsModel = this;
+        calls = await CallsModel.find({ caller: user._id })
+            .populate({
+                path: 'reciever',
+                model: 'User',
+                select: 'name',
+            })
+            .lean(true)
+            .exec();
+
+        seiralizedCalls = calls.map(call => ({
+            date: call.created_at.toLocaleDateString(),
+            name: call.reciever.name,
+            collected: call.is_collected
+        }));
+        return seiralizedCalls;
+    },
+
     async getCallsBalanceByUser(user) {
         const CallModel = this;
         let currentCallsBalance;
         currentCallsBalance = await CallModel
-            .countDocuments({ caller: user._id});
+            .countDocuments({ caller: user._id });
         return currentCallsBalance;
     },
 
     userAllowsToMakeAnotherCall(currentCallsBalance) {
-        return currentCallsBalance + 1 <= nexmoSettings.CALL.CALLS_MAX_BALANCE;
+        return currentCallsBalance - 1 >= 0;
     },
 
     getCallByConversationId(conversationId) {
@@ -91,6 +112,20 @@ CallSchema.statics = {
         }
     },
 
+    async isAllowToMakeCall(callingUser, targetUserToCall) {
+        let decreaseBalanceToTargetUser = false;
+        if (!this.userAllowsToMakeAnotherCall(callingUser.credits.remaining_calls)) {
+            // we will check if the target user balance is ok and take 1 call from him
+            if (!this.userAllowsToMakeAnotherCall(targetUserToCall.credits.remaining_calls)) {
+                throw new PhoneCallsAmountExeededError('Not enough calls balance remaining');
+            } else {
+                decreaseBalanceToTargetUser = true;
+            }
+
+        }
+        return decreaseBalanceToTargetUser;
+    },
+
     async callUser(callingUser, targetPhoneNumberToCall) {
         let targetUserToCall;
         targetUserToCall = await User.getUserByPhoneNumber(targetPhoneNumberToCall);
@@ -101,24 +136,55 @@ CallSchema.statics = {
         if (!isPartOfMyContacts) {
             throw new UserIsNotAllowedToSendMessageError('Target user is not part of current user approved contacts');
         }
-        const currentCallsBalance = await this.getCallsBalanceByUser(callingUser);
-        if (!this.userAllowsToMakeAnotherCall(currentCallsBalance)) {
-            throw new PhoneCallsAmountExeededError('Not enough calls balance remaining');
-        }
+        let decreaseBalanceFromTargetUser, isCollected;
+        decreaseBalanceFromTargetUser = isCollected =
+            this.isAllowToMakeCall(callingUser, targetUserToCall);
+
         let textToSpeachMessage = formatString(nexmoSettings.CALL.SERVER_MESSAGE, callingUser.name);
+        const conversationId =
+            this.sendTextToSpeach(callingUser, targetPhoneNumberToCall, textToSpeachMessage);
+        await this.createCallInstance(conversationId, textToSpeachMessage,
+            callingUser._id, targetUserToCall._id, isCollected);
+
+        if (decreaseBalanceFromTargetUser) {
+            this.sendPushNotificationWhenChangingTargetUserCallsBalance(callingUser, targetUserToCall);
+            await targetUserToCall.decreaseAmountOfCallsCredits(1);
+        } else {
+            callingUser = await callingUser.decreaseAmountOfCallsCredits(1);
+        }
+
+        const remainingCallsBalance = callingUser.credits.remaining_calls;
+        const answeredCallsBalance = callingUser.credits.amount_of_calls - callingUser.credits.remaining_calls;
+        return { remainingCallsBalance, answeredCallsBalance };
+    },
+
+    async sendPushNotificationWhenChangingTargetUserCallsBalance(askingUser, loaningUser) {
+        const pushNotificationsToken = loaningUser.push_notifications_token; // target user
+        if (pushNotificationsToken) {
+            const pushNotificationMessage = {
+                title: 'Call credit was loaned',
+                body: formatString(STATUS_CODES.STATUS_2008.message, "1", askingUser.name)
+            }
+            const pushNotificationData = {
+                status_code: STATUS_CODES.STATUS_2007.code,
+            }
+            FirebaseAdmin.sendPushNotification(pushNotificationMessage,
+                pushNotificationData,
+                pushNotificationsToken);
+        }
+    },
+
+    async sendTextToSpeach(callingUser, targetPhoneNumberToCall, textToSpeachMessage) {
         let conversationId;
         try {
-            conversationId = await NexmoHandler.sendTextToSpeach(callingUser.name, targetPhoneNumberToCall,
+            conversationId = await NexmoHandler.sendTextToSpeach(callingUser.name,
+                targetPhoneNumberToCall,
                 textToSpeachMessage);
         } catch (err) {
             throw new NexmoPhoneCallsServiceError('Error while trying to call from nexmo');
-        }
+        };
 
-        await this.createCallInstance(conversationId, textToSpeachMessage,
-            callingUser._id, targetUserToCall._id);
-        const answeredCallsBalance = currentCallsBalance + 1
-        const remainingCallsBalance = nexmoSettings.CALL.CALLS_MAX_BALANCE - answeredCallsBalance;
-        return { remainingCallsBalance, answeredCallsBalance };
+        return conversationId;
     },
 
     async createCallInstance(conversationId, textToSpeachMessage,
@@ -129,7 +195,8 @@ CallSchema.statics = {
             text_to_speach: textToSpeachMessage,
             caller: callingUserId,
             reciever: reciverId,
-            status: CONVERSATION_STATUS.STARTED
+            status: CONVERSATION_STATUS.STARTED,
+            is_collected: isCollected
         });
         let session;
         try {

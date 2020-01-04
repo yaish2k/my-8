@@ -10,4 +10,7 @@ router.post('/send-sms-to-user', tokenVerificationMiddleware, authenticationMidd
 router.post('/sms-status', messageStatusCallbackMiddleware,
     smsController.updateSmsStatus);
 
+router.get('/get-sms-list', tokenVerificationMiddleware, authenticationMiddleware, 
+    smsController.getSmsList)
+
 module.exports = router;

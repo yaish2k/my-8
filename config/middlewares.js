@@ -28,9 +28,11 @@ exports.tokenVerificationMiddleware = (req, res, next) => {
         })
 }
 
-exports.authenticationMiddleware = (req, res, next) => {
-    // const userId = req.userTokenId;
-    const userId = 'FK6fOZ7ktseSRFLmy30T4VJEF543';
+exports.authenticationMiddleware = async (req, res, next) => {
+    const user = await User.getUserByPhoneNumber('+15058881006');
+    req.user = user;
+    return next()
+    const userId = req.userTokenId;
     FirebaseAdmin.getUser(userId)
         .then(userRecord => {
             const userData = userRecord.toJSON();

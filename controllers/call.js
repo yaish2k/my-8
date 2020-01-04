@@ -19,3 +19,8 @@ exports.updateCallStatus = asyncMiddleware(async (req, res, next) => {
     await Call.sendPushNotification(callInstance);
     res.sendStatus(200);
 });
+
+exports.getCallsList = asyncMiddleware(async (req, res, next) => {
+    const callsList = await Call.getCallsList(req.user);
+    res.status(200).send(callsList);
+})

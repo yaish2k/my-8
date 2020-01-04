@@ -14,7 +14,11 @@ exports.sendSmsToUser = asyncMiddleware(async (req, res, next) => {
 exports.updateSmsStatus = asyncMiddleware(async (req, res, next) => {
     const message = req.messageInstance;
     await SMS.updateSmsStatusToRecieved(message);
-    await SMS.sendPushNotification(message);
+    await SMS.sendPushNotificationWhenSmsRecieved(message);
     res.sendStatus(200);
-
 });
+
+exports.getSmsList = asyncMiddleware(async (req, res, next) => {
+    const smsList = await SMS.getSerializedSmsBalance(req.user);
+    res.status(200).send(smsList);
+})

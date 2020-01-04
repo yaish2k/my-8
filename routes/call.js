@@ -11,4 +11,7 @@ router.post('/call-user', tokenVerificationMiddleware, authenticationMiddleware,
 router.post('/answer', conversationStatusCallbackMiddleware,
     callController.updateCallStatus);
 
+router.get('/get-calls-list', tokenVerificationMiddleware, authenticationMiddleware,
+    callController.getCallsList)
+
 module.exports = router;

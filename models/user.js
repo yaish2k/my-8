@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const { castToObjectId, castToId } = require('../utils/utilities');
 const appSettings = require('../config/index').app;
 const _ = require('lodash');
+
 /**
  * User Schema
  */
@@ -37,7 +38,13 @@ const UserSchema = new Schema({
             contact_alias_name: { type: String, default: '' },
             status: { type: String, default: status.APPROVED }
         }
-    ]
+    ],
+    credits: {
+        amount_of_calls: { type: Number, default: 0 },
+        amount_of_sms: { type: Number, default: 0 },
+        remaining_calls: { type: Number, default: 0 },
+        remaining_sms: { type: Number, default: 0 }
+    }
 
 });
 UserSchema.virtual('id').get(function () {
@@ -55,6 +62,16 @@ UserSchema.set('toJSON', {
  */
 
 UserSchema.methods = {
+
+    decreaseAmountOfCallsCredits(givenAmount) {
+        this.credits.remaining_calls -= givenAmount;
+        return this.save();
+    },
+
+    decreaseAmountOfSmsCredits(givenAmount) {
+        this.credits.remaining_sms -= givenAmount;
+        return this.save();
+    },
 
     isAllowToAddAnotherContact() {
         return this.approved_contacts.length + 1 <= appSettings.MAX_APPROVED_CONTACTS;
@@ -106,7 +123,7 @@ UserSchema.statics = {
             return c.user.toString() === castToId(contactId) && c.status === status.APPROVED
         });
         return approvedContact;
-        
+
     },
 
     removeContactFromArray(user, contactId) {

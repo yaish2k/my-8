@@ -1,5 +1,6 @@
 module.exports = {
     schemaDepsOrder: [
+        'payment.js',
         'user.js',
         'contact-request.js',
         'call.js',

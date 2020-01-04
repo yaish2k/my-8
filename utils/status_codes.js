@@ -49,6 +49,14 @@ STATUS_CODES = {
         code: 2006,
         message: 'phone call was answered by {0}' // send by push notification to the sender somehow
     },
+    STATUS_2007: {
+        code: 2007,
+        message: '{0} sms credit was was borrowed to {1}' 
+    },
+    STATUS_2008: {
+        code: 2008,
+        message: '{0} call credit was borrowed to {1}'
+    },
     STATUS_2020: {
         code: 2020,
         message: '{0} approved your request' // send by push notification to the sender somehow
