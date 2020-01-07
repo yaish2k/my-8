@@ -13,7 +13,6 @@ exports.asyncMiddleware = (controllerFn) => {
     }
 }
 exports.tokenVerificationMiddleware = (req, res, next) => {
-    return next();
     const token = req.headers.authorization;
     if (!token) {
         return res.status(401).send("Access denied. No token provided.");
@@ -29,9 +28,6 @@ exports.tokenVerificationMiddleware = (req, res, next) => {
 }
 
 exports.authenticationMiddleware = async (req, res, next) => {
-    const user = await User.getUserByPhoneNumber('+15058881006');
-    req.user = user;
-    return next()
     const userId = req.userTokenId;
     FirebaseAdmin.getUser(userId)
         .then(userRecord => {
