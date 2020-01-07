@@ -8,9 +8,8 @@ const nexmoSettings = require('./config/index').nexmo;
 const { PurchaseHandler } = require('./utils/purchase');
 
 async function migrateAll() {
-    // await performEditOperations();
-    // await performCreateOperations();
-    // await testOperations4();
+    await performEditOperations();
+    await performCreateOperations();
 }
 
 async function testOperations() {
