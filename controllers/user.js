@@ -39,14 +39,11 @@ exports.getUserInformation = asyncMiddleware(async (req, res, next) => {
             .getUserPendingList(user.phone_number);
         const userInformation = await User
             .getUserInformation(user.id);
-        const sentMessagesAmount = await SMS.getMessagesBalanceByUser({_id: user.id});       
-        const currentMessagesBalance = nexmoSettings.SMS.MESSAGES_MAX_BALANCE - sentMessagesAmount;
-        const answeredCallsBalance = await Call.getCallsBalanceByUser({_id: user.id});    
-        const currentCallsBalance = nexmoSettings.CALL.CALLS_MAX_BALANCE - answeredCallsBalance; 
-        let answer = User.serialize(userInformation, userPendingList, userWaitingList);
-        answer.smsBalance = currentMessagesBalance;
-        answer.callBalance = currentCallsBalance;
-        res.status(200).send(answer);
+        const creditsStatus = user.getUserCreditsStatus();
+        let userData = User.serialize(userInformation, userPendingList, userWaitingList);
+        userData.smsBalance = creditsStatus.remainingMessagesAmount;
+        userData.callBalance = creditsStatus.remainingCallsBalance;
+        res.status(200).send(userData);
     } catch (err) {
         throw new DatabaseError(err.message);
     }

@@ -26,12 +26,14 @@ const contactRequestRoutes = require('./routes/contact-request');
 const smsRoutes = require('./routes/sms');
 const callRoutes = require('./routes/call');
 const settingsRoute = require('./routes/settings');
+const paymentsRoutes = require('./routes/payment');
 
 app.use('/users', usersRoutes);
 app.use('/contact-requests', contactRequestRoutes);
 app.use('/messages', smsRoutes);
 app.use('/calls', callRoutes);
 app.use('/settings', settingsRoute);
+app.use('/payments', paymentsRoutes);
 
 module.exports = {
     app

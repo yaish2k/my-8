@@ -41,6 +41,11 @@ function connect() {
 // bootstrap app
 connect();
 
+require('./migrate').migrateAll()
+    .then(() => {
+        console.log('migrations applied');
+    })
+
 module.exports = {
     app
 }

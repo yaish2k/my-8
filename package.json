@@ -11,7 +11,7 @@
   "author": "gal yaish",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^1.18.3"
+    "nodemon": "^1.19.4"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -27,7 +27,6 @@
     "mongoose": "^5.7.7",
     "morgan": "^1.9.1",
     "nexmo": "^2.5.1",
-    "nodemon": "^1.18.3",
     "supertest": "^4.0.2",
     "validator": "^12.0.0"
   }

@@ -63,14 +63,63 @@ UserSchema.set('toJSON', {
 
 UserSchema.methods = {
 
-    decreaseAmountOfCallsCredits(givenAmount) {
+    decreaseAmountOfCallsCredits(givenAmount, forceSave = true) {
         this.credits.remaining_calls -= givenAmount;
-        return this.save();
+        if (forceSave) {
+            return this.save();
+        }
+
     },
 
-    decreaseAmountOfSmsCredits(givenAmount) {
+    increaseAmountOfCallsCredits(givenAmount, forceSave = true) {
+        this.credits.remaining_calls += givenAmount
+        if (forceSave) {
+            return this.save();
+        }
+
+    },
+
+    increaseAmountOfTotalCallsCredits(givenAmount, forceSave = true) {
+        this.credits.amount_of_calls += givenAmount;
+        if (forceSave) {
+            return this.save();
+        }
+
+    },
+
+    decreaseAmountOfSmsCredits(givenAmount, forceSave = true) {
         this.credits.remaining_sms -= givenAmount;
-        return this.save();
+        if (forceSave) {
+            return this.save();
+        }
+    },
+
+    increaseAmountOfSmsCredits(givenAmount, forceSave = true) {
+        this.credits.remaining_sms += givenAmount;
+        if (forceSave) {
+            return this.save();
+        }
+
+    },
+    increaseAmountOfTotalSmsCredits(givenAmount, forceSave = true) {
+        this.credits.amount_of_sms += givenAmount;
+        if (forceSave) {
+            return this.save();
+        }
+
+    },
+
+    getUserCreditsStatus() {
+        const remainingMessagesAmount = this.credits.remaining_sms;
+        const sentMessagesAmount = this.credits.amount_of_sms - this.credits.remaining_sms;
+        const remainingCallsBalance = this.credits.remaining_calls;
+        const answeredCallsBalance = this.credits.amount_of_calls - this.credits.remaining_calls;
+        return {
+            remainingMessagesAmount,
+            sentMessagesAmount,
+            remainingCallsBalance,
+            answeredCallsBalance
+        }
     },
 
     isAllowToAddAnotherContact() {
