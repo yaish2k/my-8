@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "mocha --recursive --exit",
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "start-server": "server app.js"
   },
   "author": "gal yaish",
