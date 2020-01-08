@@ -15,7 +15,7 @@ exports.updateSmsStatus = asyncMiddleware(async (req, res, next) => {
     const message = req.messageInstance;
     await SMS.updateSmsStatusToRecieved(message);
     await SMS.sendPushNotificationWhenSmsRecieved(message);
-    res.sendStatus(200);
+    res.status(200).send({text:'ok'});
 });
 
 exports.getSmsList = asyncMiddleware(async (req, res, next) => {
