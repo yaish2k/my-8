@@ -126,14 +126,14 @@ PaymentPlanSchema.statics = {
     },
 
 
-    async addPlanCreditsToUser(buyingUser, paymentPlan) {
+    addPlanCreditsToUser(buyingUser, paymentPlan) {
         buyingUser.increaseAmountOfTotalSmsCredits(paymentPlan.sms_package, false);
         buyingUser.increaseAmountOfSmsCredits(paymentPlan.sms_package, false);
         buyingUser.increaseAmountOfTotalCallsCredits(paymentPlan.calls_package, false)
         buyingUser.increaseAmountOfCallsCredits(paymentPlan.calls_package, false);
     },
 
-    async addGiftCreditsToUser(buyingUser, paymentPlan, giftType) {
+    addGiftCreditsToUser(buyingUser, paymentPlan, giftType) {
         if (paymentPlan.gift) {
             if (giftType === GIFT_TYPE.CALLS) {
                 buyingUser.increaseAmountOfTotalCallsCredits(paymentPlan.gift.amount_of_calls, false)
