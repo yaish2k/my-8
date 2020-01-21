@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { PHONE_VALIDATOR, IMAGE_VALIDATOR, EMAIL_VALIDATOR } = require('../utils/validators');
 const Schema = mongoose.Schema;
+const nexmoSettings = require('../config/index').nexmo;
 const { castToObjectId, castToId } = require('../utils/utilities');
 const appSettings = require('../config/index').app;
 const _ = require('lodash');
@@ -40,10 +41,10 @@ const UserSchema = new Schema({
         }
     ],
     credits: {
-        amount_of_calls: { type: Number, default: 0 },
-        amount_of_sms: { type: Number, default: 0 },
-        remaining_calls: { type: Number, default: 0 },
-        remaining_sms: { type: Number, default: 0 }
+        amount_of_calls: { type: Number, default: nexmoSettings.CALL.CALLS_MAX_BALANCE },
+        amount_of_sms: { type: Number, default: nexmoSettings.CALL.CALLS_MAX_BALANCE },
+        remaining_calls: { type: Number, default: nexmoSettings.SMS.MESSAGES_MAX_BALANCE },
+        remaining_sms: { type: Number, default: nexmoSettings.SMS.MESSAGES_MAX_BALANCE }
     }
 
 });

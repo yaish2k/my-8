@@ -1,15 +1,12 @@
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
-const SMS = mongoose.model('SMS');
-const Call = mongoose.model('Call');
 const ContactRequest = mongoose.model('ContactRequest');
 const { UserCreatedResponse, UserEditedResponse,
     UserDeletedResponse } = require('../utils/responses');
 const { asyncMiddleware } = require('../config/middlewares');
 const { DatabaseError } = require('../utils/errors');
-const nexmoSettings = require('../config/index').nexmo;
 
-exports.createUser = asyncMiddleware(async (req, res, next) => {
+exports.createUser = asyncMiddleware(async (req, res) => {
     const body = req.body;
     try {
         await User.createUser(body);
@@ -20,7 +17,7 @@ exports.createUser = asyncMiddleware(async (req, res, next) => {
 
 });
 
-exports.editUser = asyncMiddleware(async (req, res, next) => {
+exports.editUser = asyncMiddleware(async (req, res) => {
     const fieldsToUpdate = req.body;
     try {
         await User.editUser(req.user.id, fieldsToUpdate);
@@ -30,7 +27,7 @@ exports.editUser = asyncMiddleware(async (req, res, next) => {
     }
 });
 
-exports.getUserInformation = asyncMiddleware(async (req, res, next) => {
+exports.getUserInformation = asyncMiddleware(async (req, res) => {
     const user = req.user;
     try {
         const userWaitingList = await ContactRequest
@@ -50,7 +47,7 @@ exports.getUserInformation = asyncMiddleware(async (req, res, next) => {
 
 });
 
-exports.removeContact = asyncMiddleware(async (req, res, next) => {
+exports.removeContact = asyncMiddleware(async (req, res) => {
     const user = req.user;
     const { contactId } = req.body;
     try {
